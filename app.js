@@ -16,6 +16,7 @@ let visualizer = null;
 document.addEventListener("DOMContentLoaded", () => {
   visualizer = new LuminaVisualizer("visualizer-canvas");
   
+  loadSavedKeys(); // Load API keys from local storage securely
   initRoadmap();
   initVoices();
   initSpeechRecognition();
@@ -40,6 +41,32 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((err) => console.error("Service Worker registration failed:", err));
   }
 });
+
+// Load API keys from local storage securely
+function loadSavedKeys() {
+  const apiKeyInput = document.getElementById("api-key-input");
+  const didKeyInput = document.getElementById("did-key-input");
+  const didImageInput = document.getElementById("did-image-input");
+
+  if (apiKeyInput) {
+    apiKeyInput.value = localStorage.getItem("lumina_api_key") || "";
+    apiKeyInput.addEventListener("input", (e) => {
+      localStorage.setItem("lumina_api_key", e.target.value.trim());
+    });
+  }
+  if (didKeyInput) {
+    didKeyInput.value = localStorage.getItem("lumina_did_key") || "";
+    didKeyInput.addEventListener("input", (e) => {
+      localStorage.setItem("lumina_did_key", e.target.value.trim());
+    });
+  }
+  if (didImageInput) {
+    didImageInput.value = localStorage.getItem("lumina_did_image") || didImageInput.value;
+    didImageInput.addEventListener("input", (e) => {
+      localStorage.setItem("lumina_did_image", e.target.value.trim());
+    });
+  }
+}
 
 // Setup sidebar roadmap navigation
 function initRoadmap() {
