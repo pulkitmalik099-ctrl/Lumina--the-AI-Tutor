@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina – Interactive LLM & Agentic AI Tutor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar: 30-Day Syllabus Roadmap -->
+    <aside class="glass-panel sidebar">
+      <div class="brand">
+        <span class="brand-icon">🔮</span>
+        <h1>LUMINA</h1>
+      </div>
+      <div class="roadmap-header">
+        <span>30-Day Syllabus</span>
+        <span id="progress-indicator" style="color: var(--cyan); font-weight: bold;">0%</span>
+      </div>
+      <div class="roadmap-scroll" id="roadmap-list">
+        <!-- Day items injected by app.js -->
+      </div>
+      
+      <!-- API Settings Widget -->
+      <div class="api-settings-panel">
+        <h5>Optional API Settings</h5>
+        <input type="password" id="api-key-input" class="api-key-input" placeholder="Enter Gemini or OpenAI API Key..." style="margin-bottom: 8px;" />
+        
+        <h5>D-ID API Avatar Settings</h5>
+        <input type="password" id="did-key-input" class="api-key-input" placeholder="Enter D-ID API Key..." style="margin-bottom: 8px;" />
+        <input type="url" id="did-image-input" class="api-key-input" placeholder="Face Image URL (for D-ID)..." value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&h=256&fit=crop" />
+      </div>
+    </aside>
+
+    <!-- Center Pane: Workspace (Concept & Visualizer/Code) -->
+    <main class="workspace">
+      
+      <!-- Top Half: Daily Concept Explanation -->
+      <section class="workspace-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <span>📖</span> Topic Explanation
+          </div>
+          <div id="topic-category-badge" style="font-size: 11px; text-transform: uppercase; border: 1px solid var(--pink); color: var(--pink); padding: 2px 8px; border-radius: 12px;">
+            LLM Foundations
+          </div>
+        </div>
+        <div class="scroll-content concept-area" id="concept-content">
+          <!-- Concept text markdown injected by app.js -->
+        </div>
+        <div class="audio-action-row">
+          <button class="btn-audio-listen" id="btn-play-topic">
+            <span>🔊</span> Listen to Explanation
+          </button>
+        </div>
+      </section>
+
+      <!-- Bottom Half: Dynamic Visualizer & Code playground -->
+      <section class="workspace-pane" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Left: Interactive Visualizer -->
+        <div style="display: flex; flex-direction: column; overflow: hidden;">
+          <div class="pane-header">
+            <div class="pane-title"><span>⚡</span> Interactive Playground</div>
+          </div>
+          <div class="scroll-content" id="visualizer-canvas" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px; border: 1px solid var(--border-color);">
+            <!-- Visualizer module renders here -->
+          </div>
+        </div>
+        
+        <!-- Right: Code snippet -->
+        <div style="display: flex; flex-direction: column; overflow: hidden;">
+          <div class="pane-header">
+            <div class="pane-title"><span>💻</span> Implementation Code</div>
+          </div>
+          <div class="code-container" style="flex: 1;">
+            <button class="copy-btn" id="btn-copy-code">Copy</button>
+            <pre><code id="code-snippet-box"></code></pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Right Pane: AI Tutor Chatbot -->
+    <aside class="chat-pane">
+      <div class="chat-header">
+        <div class="tutor-profile">
+          <div class="avatar">🤖</div>
+          <div class="tutor-name">
+            <h3>Lumina AI Tutor</h3>
+            <div class="status-dot">Online & Listening</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- D-ID Avatar Video Screen -->
+      <div class="avatar-video-wrapper">
+        <div class="avatar-video-loader" id="avatar-loader">
+          <div class="avatar-pulse-ring"></div>
+          <span>Avatar is speaking...</span>
+        </div>
+        <video id="avatar-video" src="" autoplay playsinline></video>
+        <div class="avatar-fallback-img" id="avatar-fallback-img"></div>
+      </div>
+      
+      <!-- Chat history bubbles -->
+      <div class="chat-history" id="chat-messages">
+        <div class="msg tutor">
+          Hello! I am Lumina, your AI Study Assistant. I am here to guide you through your 30-day journey learning LLMs, Transformers, Embeddings, and Agentic AI.
+          <br><br>
+          Select a day on the left to begin, or ask me any question about the curriculum. You can also click the microphone to speak to me!
+        </div>
+      </div>
+
+      <!-- Voice Preferences panel -->
+      <div class="audio-controls">
+        <button class="voice-toggle-btn active" id="btn-audio-reply-toggle">
+          <span>🔊</span> Speak Responses
+        </button>
+        <select id="voice-select" class="premium-select" style="background:rgba(0,0,0,0.5); border:1px solid var(--border-color); color:#fff; font-size:11px; padding:4px 8px; border-radius:12px; max-width: 140px;">
+          <!-- Voice options populated by JS -->
+        </select>
+      </div>
+
+      <!-- Chat input fields -->
+      <div class="chat-input-wrapper">
+        <input type="text" class="chat-input" id="chat-input-text" placeholder="Ask Lumina a question..." />
+        <button class="voice-record-btn" id="btn-mic-toggle" title="Talk to Tutor">🎙️</button>
+        <button class="send-btn" id="btn-send-message">➔</button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Include Scripts -->
+  <script src="curriculum.js"></script>
+  <script src="visualizer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
