@@ -32,6 +32,13 @@ document.addEventListener("DOMContentLoaded", () => {
       fallbackImg.style.backgroundImage = `url('${didImageInput.value}')`;
     });
   }
+
+  // Register PWA Service Worker for offline mobile support
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then((reg) => console.log("Lumina Service Worker registered successfully:", reg.scope))
+      .catch((err) => console.error("Service Worker registration failed:", err));
+  }
 });
 
 // Setup sidebar roadmap navigation
