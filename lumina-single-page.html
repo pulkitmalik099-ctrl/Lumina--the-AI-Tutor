@@ -1,0 +1,3067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina – Interactive LLM & Agentic AI Tutor</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/nolan/512/crystal-ball.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+/* Lumina - Premium Design System Stylesheet */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  --bg-gradient: linear-gradient(135deg, #080811 0%, #0d0d22 100%);
+  --panel-bg: rgba(16, 16, 36, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --cyan: #00f0ff;
+  --pink: #ff007f;
+  --green: #39ff14;
+  --amber: #ffb000;
+  --purple: #9d00ff;
+  --text-primary: #f0f0f8;
+  --text-secondary: #a0a0c0;
+  --shadow-glow: 0 0 20px rgba(0, 240, 255, 0.15);
+  --font-sans: 'Outfit', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-gradient);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* App Layout */
+.app-container {
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* Glassmorphism Panel Template */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  border-right: 1px solid var(--border-color);
+}
+
+.brand {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.brand-icon {
+  font-size: 28px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.brand h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, var(--cyan), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.roadmap-header {
+  padding: 16px 24px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roadmap-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.roadmap-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.roadmap-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.day-node {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.day-node:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 240, 255, 0.3);
+  transform: translateX(4px);
+}
+
+.day-node.active {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--cyan);
+  box-shadow: var(--shadow-glow);
+}
+
+.day-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+}
+
+.day-node.active .day-badge {
+  background: var(--cyan);
+  color: #050510;
+  border-color: var(--cyan);
+}
+
+.day-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.day-cat {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Main Content Workspace */
+.workspace {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.workspace-pane {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.workspace-pane:last-child {
+  border-bottom: none;
+}
+
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pane-title {
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+/* Concept Markdown Styling */
+.concept-area h3 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.concept-area p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.concept-area ul {
+  margin-left: 20px;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+.concept-area li {
+  margin-bottom: 6px;
+}
+
+.concept-area code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--pink);
+}
+
+/* Code Playground */
+.code-container {
+  background: #06060f;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #a9b7c6;
+  overflow: auto;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--cyan);
+  color: #000;
+}
+
+/* Chatbot Area */
+.chat-pane {
+  background: rgba(10, 10, 24, 0.7);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-left: 1px solid var(--border-color);
+}
+
+.chat-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tutor-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.tutor-name h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.status-dot {
+  font-size: 10px;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-dot::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green);
+}
+
+.chat-history {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-history::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-history::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.msg.tutor {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  align-self: flex-start;
+  border-top-left-radius: 4px;
+}
+
+.msg.user {
+  background: linear-gradient(90deg, #9d00ff, #ff007f);
+  color: #fff;
+  align-self: flex-end;
+  border-top-right-radius: 4px;
+  box-shadow: 0 4px 12px rgba(255, 0, 127, 0.25);
+}
+
+.audio-btn-small {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.audio-btn-small:hover {
+  text-shadow: 0 0 8px var(--cyan);
+}
+
+/* Audio Control Pane inside Chat */
+.audio-controls {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.voice-toggle-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voice-toggle-btn:hover {
+  border-color: var(--cyan);
+}
+
+.voice-toggle-btn.active {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.chat-input-wrapper {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+}
+
+.voice-record-btn {
+  background: rgba(255, 0, 127, 0.1);
+  border: 1px solid var(--pink);
+  color: var(--pink);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.voice-record-btn:hover {
+  background: var(--pink);
+  color: #fff;
+}
+
+.voice-record-btn.recording {
+  background: var(--pink);
+  color: #fff;
+  animation: pulse 1.5s infinite;
+}
+
+.send-btn {
+  background: var(--cyan);
+  border: none;
+  color: #050510;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.send-btn:hover {
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* Audio Player and visualizer modules */
+.audio-action-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-audio-listen {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-audio-listen:hover {
+  background: var(--cyan);
+  color: #000;
+}
+
+/* Sub-panels Visualizer specifics */
+.tokenizer-visualizer,
+.bpe-visualizer,
+.embeddings-visualizer,
+.embeddings-types-visualizer,
+.attention-visualizer,
+.hnsw-visualizer,
+.distance-calc-visual,
+.rag-flow-visualizer,
+.react-visualizer,
+.visualizer-fallback {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.premium-input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.token-chunks-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  min-height: 48px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.token-chunk {
+  border: 1px solid;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.space-token {
+  border-color: #555 !important;
+  color: #555 !important;
+  background: rgba(255,255,255,0.02);
+}
+
+.token-ids-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  min-height: 48px;
+  margin-bottom: 12px;
+}
+
+.token-id-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.space-token-id {
+  color: #555 !important;
+  background: rgba(255,255,255,0.02) !important;
+}
+
+.vocab-lookup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  max-height: 100px;
+  overflow-y: auto;
+  padding: 8px;
+  background: rgba(255,255,255,0.01);
+  border-radius: 6px;
+}
+
+.vocab-row {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.arrow {
+  color: var(--text-secondary);
+}
+
+/* HNSW Index animations */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+/* Attention grid matrix details */
+.matrix-headers-top {
+  display: flex;
+  margin-bottom: 4px;
+  padding-left: 70px;
+}
+
+.col-hdr {
+  width: 50px;
+  font-size: 10px;
+  text-align: center;
+  transform: rotate(-30deg);
+  white-space: nowrap;
+}
+
+.matrix-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.matrix-row-header {
+  width: 70px;
+  font-size: 11px;
+  text-align: right;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+.matrix-cell {
+  width: 32px;
+  height: 24px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 2px;
+  cursor: pointer;
+  border-radius: 2px;
+  color: #000;
+  font-weight: 600;
+}
+
+.attention-focused-stat {
+  margin-top: 12px;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border-radius: 6px;
+}
+
+/* ReAct loop stepper list */
+.react-step-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.react-step-node {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease;
+}
+
+.react-step-node.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#node-thought { border-left: 3px solid var(--cyan); }
+#node-action { border-left: 3px solid var(--pink); }
+#node-observation { border-left: 3px solid var(--amber); }
+#node-final { border-left: 3px solid var(--green); background: rgba(57, 255, 20, 0.03); }
+
+/* BPE animation steps */
+.bpe-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.bpe-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.01);
+  opacity: 0.15;
+  transition: opacity 0.5s;
+}
+
+.bpe-step.visible {
+  opacity: 1;
+}
+
+.bpe-step .nodes {
+  display: flex;
+  gap: 4px;
+}
+
+.bpe-step .node {
+  border: 1px solid var(--text-secondary);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.bpe-step .node.active {
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+.bpe-step .node.merged {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0, 240, 255, 0.05);
+}
+
+/* Fallback state styles */
+.visualizer-fallback {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.pulse-ring {
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  margin-bottom: 12px;
+}
+
+.visualizer-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+/* Buttons */
+.action-btn {
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  color: #050510;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: center;
+  margin-top: 10px;
+}
+
+.action-btn:hover {
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 127, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 0, 127, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 127, 0); }
+}
+
+/* Key settings widget */
+.api-settings-panel {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.01);
+}
+
+.api-settings-panel h5 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+skinny-key-input {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.api-key-input {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+/* D-ID Talking Avatar Video Screen Styles */
+.avatar-video-wrapper {
+  width: calc(100% - 40px);
+  height: 180px;
+  margin: 10px 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #050510;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#avatar-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none; /* Show only when playing */
+  z-index: 2;
+}
+
+.avatar-fallback-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+}
+
+.avatar-video-loader {
+  position: absolute;
+  z-index: 3;
+  display: none; /* Show only when processing talks */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 17, 0.85);
+  width: 100%;
+  height: 100%;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 500;
+  gap: 12px;
+}
+
+.avatar-pulse-ring {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  animation: avatarPulse 1.5s infinite;
+}
+
+@keyframes avatarPulse {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.5); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(0, 240, 255, 0); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+}
+
+</style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar: 30-Day Syllabus Roadmap -->
+    <aside class="glass-panel sidebar">
+      <div class="brand">
+        <span class="brand-icon">🔮</span>
+        <h1>LUMINA</h1>
+      </div>
+      <div class="roadmap-header">
+        <span>30-Day Syllabus</span>
+        <span id="progress-indicator" style="color: var(--cyan); font-weight: bold;">0%</span>
+      </div>
+      <div class="roadmap-scroll" id="roadmap-list">
+        <!-- Day items injected by app.js -->
+      </div>
+      
+      <!-- API Settings Widget -->
+      <div class="api-settings-panel">
+        <h5>Optional API Settings</h5>
+        <input type="password" id="api-key-input" class="api-key-input" placeholder="Enter Gemini or OpenAI API Key..." style="margin-bottom: 8px;" />
+        
+        <h5>D-ID API Avatar Settings</h5>
+        <input type="password" id="did-key-input" class="api-key-input" placeholder="Enter D-ID API Key..." style="margin-bottom: 8px;" />
+        <input type="url" id="did-image-input" class="api-key-input" placeholder="Face Image URL (for D-ID)..." value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&h=256&fit=crop" />
+      </div>
+    </aside>
+
+    <!-- Center Pane: Workspace (Concept & Visualizer/Code) -->
+    <main class="workspace">
+      
+      <!-- Top Half: Daily Concept Explanation -->
+      <section class="workspace-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <span>📖</span> Topic Explanation
+          </div>
+          <div id="topic-category-badge" style="font-size: 11px; text-transform: uppercase; border: 1px solid var(--pink); color: var(--pink); padding: 2px 8px; border-radius: 12px;">
+            LLM Foundations
+          </div>
+        </div>
+        <div class="scroll-content concept-area" id="concept-content">
+          <!-- Concept text markdown injected by app.js -->
+        </div>
+        <div class="audio-action-row">
+          <button class="btn-audio-listen" id="btn-play-topic">
+            <span>🔊</span> Listen to Explanation
+          </button>
+        </div>
+      </section>
+
+      <!-- Bottom Half: Dynamic Visualizer & Code playground -->
+      <section class="workspace-pane" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Left: Interactive Visualizer -->
+        <div style="display: flex; flex-direction: column; overflow: hidden;">
+          <div class="pane-header">
+            <div class="pane-title"><span>⚡</span> Interactive Playground</div>
+          </div>
+          <div class="scroll-content" id="visualizer-canvas" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px; border: 1px solid var(--border-color);">
+            <!-- Visualizer module renders here -->
+          </div>
+        </div>
+        
+        <!-- Right: Code snippet -->
+        <div style="display: flex; flex-direction: column; overflow: hidden;">
+          <div class="pane-header">
+            <div class="pane-title"><span>💻</span> Implementation Code</div>
+          </div>
+          <div class="code-container" style="flex: 1;">
+            <button class="copy-btn" id="btn-copy-code">Copy</button>
+            <pre><code id="code-snippet-box"></code></pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Right Pane: AI Tutor Chatbot -->
+    <aside class="chat-pane">
+      <div class="chat-header">
+        <div class="tutor-profile">
+          <div class="avatar">🤖</div>
+          <div class="tutor-name">
+            <h3>Lumina AI Tutor</h3>
+            <div class="status-dot">Online & Listening</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- D-ID Avatar Video Screen -->
+      <div class="avatar-video-wrapper">
+        <div class="avatar-video-loader" id="avatar-loader">
+          <div class="avatar-pulse-ring"></div>
+          <span>Avatar is speaking...</span>
+        </div>
+        <video id="avatar-video" src="" autoplay playsinline></video>
+        <div class="avatar-fallback-img" id="avatar-fallback-img"></div>
+      </div>
+      
+      <!-- Chat history bubbles -->
+      <div class="chat-history" id="chat-messages">
+        <div class="msg tutor">
+          Hello! I am Lumina, your AI Study Assistant. I am here to guide you through your 30-day journey learning LLMs, Transformers, Embeddings, and Agentic AI.
+          <br><br>
+          Select a day on the left to begin, or ask me any question about the curriculum. You can also click the microphone to speak to me!
+        </div>
+      </div>
+
+      <!-- Voice Preferences panel -->
+      <div class="audio-controls">
+        <button class="voice-toggle-btn active" id="btn-audio-reply-toggle">
+          <span>🔊</span> Speak Responses
+        </button>
+        <select id="voice-select" class="premium-select" style="background:rgba(0,0,0,0.5); border:1px solid var(--border-color); color:#fff; font-size:11px; padding:4px 8px; border-radius:12px; max-width: 140px;">
+          <!-- Voice options populated by JS -->
+        </select>
+      </div>
+
+      <!-- Chat input fields -->
+      <div class="chat-input-wrapper">
+        <input type="text" class="chat-input" id="chat-input-text" placeholder="Ask Lumina a question..." />
+        <button class="voice-record-btn" id="btn-mic-toggle" title="Talk to Tutor">🎙️</button>
+        <button class="send-btn" id="btn-send-message">➔</button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Include Scripts -->
+  <script>
+// Curriculum data for Lumina Tutor
+const curriculumData = {
+  1: {
+    title: "Tokens – What and Why?",
+    category: "LLM Foundations",
+    concept: `### What is a Token?
+In simple terms, a **token** is the basic unit of text that an LLM reads and writes. 
+
+Computers cannot process raw English words directly because computers only understand numbers. Therefore, before an LLM can read a sentence, the sentence must be chopped up into smaller pieces. These pieces are called tokens.
+
+A token can be:
+- A whole word (e.g., \`"agent"\`)
+- A part of a word or subword (e.g., \`"anti"\` and \`"gravity"\` in \`"antigravity"\`)
+- A single character (e.g., \`"a"\`, \`"!"\`)
+
+### The Tokenization Problem
+If we use whole words as tokens, our vocabulary size becomes millions of words, and misspelled words (like \`"learnn"\`) would be unrecognized (the **Out-of-Vocabulary** problem). If we use characters, the model has to process too many individual letters, losing structural context. 
+
+Modern LLMs use **subword tokenization**, which balances both worlds. Common words remain whole, while rare or complex words are broken down into syllables or sub-parts.`,
+    code: `# Example of Tokenization in Python using Tiktoken (OpenAI's Tokenizer)
+import tiktoken
+
+# Load the GPT-4 tokenizer
+enc = tiktoken.get_encoding("cl100k_base")
+
+text = "Antigravity is amazing!"
+tokens = enc.encode(text)
+
+print("Original Text:", text)
+print("Token IDs:", tokens)
+# Output will be integer IDs like: [5372, 85603, 374, 7629, 0]
+
+for token_id in tokens:
+    print(f"ID: {token_id} -> Text: '{enc.decode([token_id])}'")`,
+    visualizerMode: "tokenizer",
+    audioText: "Welcome to Day 1. Today we are learning about tokens. A token is the fundamental building block of language models. Since computers only understand numbers, we must slice sentences into smaller pieces called tokens, which are then mapped to numbers. Think of them as syllables or subwords that the model reads."
+  },
+  2: {
+    title: "How Tokens Work & Are Stored",
+    category: "LLM Foundations",
+    concept: `### How Tokenization Algorithms Work
+Three main algorithms dominate the LLM space:
+1. **Byte-Pair Encoding (BPE)**: Used by GPT models. It starts with individual characters and iteratively merges the most frequent pairs of characters/tokens.
+2. **WordPiece**: Used by BERT. Similar to BPE, but merges pairs based on the likelihood of training data, rather than raw frequency.
+3. **SentencePiece**: Used by LLaMA. Treats the input as a raw byte stream, which makes it excellent for multilingual training because it doesn't assume spaces separate words.
+
+### How Tokens Are Stored
+Tokens are stored in a **vocabulary file** (usually a JSON or TXT file). This file contains a mapped lookup table of every unique token to a unique integer ID.
+- The vocabulary size of GPT-4 is roughly **100,000** tokens.
+- LLaMA 3 has a vocabulary size of **128,000** tokens.
+
+When an LLM receives text, it looks up each token in this vocabulary file to retrieve its numerical ID. When generating text, it outputs IDs and converts them back into strings.`,
+    code: `# Simulated BPE merge lookup
+vocab = {
+    0: "h", 1: "e", 2: "l", 3: "o",
+    4: "he", 5: "lo", 6: "hello"
+}
+
+def tokenize(text):
+    # If the text matches a vocab entry, return it
+    if text == "hello":
+        return [6] # Token ID for hello
+    return [vocab[c] for c in text] # Character fallback`,
+    visualizerMode: "bpe-merger",
+    audioText: "Day 2. Today we cover how tokens are stored and processed. Tokenization algorithms like Byte-Pair Encoding build a vocabulary of common subwords. This vocabulary is a simple lookup dictionary that maps string patterns to numbers. When the LLM runs, it converts incoming text into list of numbers using this dictionary."
+  },
+  3: {
+    title: "Embeddings – What are they?",
+    category: "LLM Foundations",
+    concept: `### What are Embeddings?
+Once text is tokenized into numbers, how does the model understand what those numbers mean? Through **embeddings**.
+
+An embedding is a vector (a list of decimal numbers) that represents the **semantic meaning** of a token or piece of text. Instead of a single number, a token is represented by a sequence of numbers (e.g., 768 or 1536 coordinates) in a high-dimensional space.
+
+### The Semantic Space
+In this multi-dimensional coordinate space:
+- Words with similar meanings are positioned physically close to each other.
+- The direction of the vectors represents relationships.
+- The famous equation: **"King" - "Man" + "Woman" = "Queen"** shows how mathematical addition and subtraction in vector space can capture abstract human relationships.`,
+    code: `# Fetching embeddings using the official Google Gemini API (Python)
+import google.generativeai as genai
+
+genai.configure(api_key="YOUR_GEMINI_API_KEY")
+
+result = genai.embed_content(
+    model="models/text-embedding-004",
+    content="What is the meaning of life?",
+    task_type="retrieval_document"
+)
+
+# The result is a list of 768 floating point numbers
+embedding = result['embedding']
+print("Embedding Vector Length:", len(embedding))
+print("First 5 coordinates:", embedding[:5])`,
+    visualizerMode: "embeddings-space",
+    audioText: "Day 3. We are discussing embeddings. An embedding represents word meaning as coordinates in a massive multi-dimensional room. Words with similar concepts, like cat and dog, are stored close together, allowing computers to compute semantic relations mathematically."
+  },
+  4: {
+    title: "Types of Embeddings",
+    category: "LLM Foundations",
+    concept: `### Embedding Types
+Not all embeddings are created equal. Let's break them down:
+
+1. **Static Embeddings (Word2Vec, GloVe)**:
+   - Every word has a single fixed vector, regardless of context.
+   - *Problem*: The word "bank" in "river bank" and "investment bank" gets the exact same representation.
+
+2. **Contextual / Dynamic Embeddings (BERT, GPT)**:
+   - Generated dynamically depending on surrounding words.
+   - The embedding for "bank" shifts to reflect either money or nature based on the context window.
+
+3. **Dense vs. Sparse Representations**:
+   - **Sparse (BM25, TF-IDF)**: High-dimensional vectors with mostly zeros. Excellent for finding exact keyword matches.
+   - **Dense (OpenAI/Gemini Embeddings)**: Fixed-size vectors filled entirely with non-zero decimals. Excellent for catching meaning, concepts, and synonyms.`,
+    code: `# Conceptual difference between Static and Contextual
+# Static:
+embedding_bank = get_static_vector("bank") # Same vector for both
+
+# Contextual:
+vector_1 = get_contextual_vector("The bank of the river")
+vector_2 = get_contextual_vector("The investment bank")
+# vector_1 and vector_2 are distinct based on context!`,
+    visualizerMode: "embedding-types",
+    audioText: "Day 4. Static embeddings like Word2Vec represent words in isolation, while modern transformer embeddings change their values based on surrounding context. This means the word bank is represented differently in cash transactions versus riverside walks."
+  },
+  5: {
+    title: "What is a Transformer?",
+    category: "LLM Foundations",
+    concept: `### The Transformer Revolution
+Introduced in the 2017 paper *"Attention Is All You Need"* by Google researchers, the **Transformer** architecture replaced recurrent neural networks (RNNs) like LSTMs.
+
+### Why RNNs Failed
+RNNs read text word-by-word sequentially. If you process a 1000-word essay, the model has to run 1000 sequential mathematical steps. This made training extremely slow and limited how much context the model could remember.
+
+### How Transformers Solved It
+Transformers process the **entire sentence at the same time** (parallel processing). Rather than passing memory state sequentially, they use **Self-Attention** to directly link any word in a sentence to any other word, regardless of how far apart they are.`,
+    code: `# Conceptual overview of transformer inputs
+import torch
+import torch.nn as nn
+
+class SimpleTransformerSnippet(nn.Module):
+    def __init__(self, vocab_size, d_model):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.transformer_block = nn.TransformerEncoderLayer(d_model=d_model, nhead=8)
+        
+    def forward(self, token_ids):
+        # Parallel processing: All tokens embedded at once
+        x = self.embedding(token_ids) 
+        return self.transformer_block(x)`,
+    visualizerMode: "transformer-overview",
+    audioText: "Day 5. Transformers revolutionized AI by replacing step-by-step reading with parallel reading. Instead of processing word-by-word, a Transformer looks at the entire paragraph at once, dramatically increasing training speeds and context memory."
+  },
+  6: {
+    title: "Transformer Architecture – The Inside Look",
+    category: "LLM Foundations",
+    concept: `### Inside the Transformer
+A Transformer consists of an **Encoder** (which reads and understands text) and a **Decoder** (which writes text). Modern LLMs like GPT-4 are **Decoder-only** models, meaning they are specialized for text generation.
+
+### Key Architectural Blocks:
+1. **Self-Attention (Q, K, V)**:
+   - For every token, the model calculates a **Query (Q)**, **Key (K)**, and **Value (V)**.
+   - It compares its Query against all other tokens' Keys to find attention weights.
+   - It multiplies these weights by the Values to get a context-rich representation.
+2. **Multi-Head Attention**:
+   - The model runs the attention process multiple times in parallel, allowing it to pay attention to different relationships simultaneously (e.g., grammar, facts, pronoun reference).
+3. **Positional Encoding**:
+   - Since tokens are processed in parallel, the model adds a sine/cosine wave pattern to the embeddings to tell the model where each word is in the sequence.
+4. **Feed-Forward Networks (FFN)**:
+   - Sub-layers that compute non-linear relationships to act as the model's factual storage.`,
+    code: `# Simplified Self-Attention math in NumPy
+import numpy as np
+
+def self_attention(Q, K, V):
+    # Step 1: Calculate attention scores (dot product)
+    scores = np.dot(Q, K.T)
+    
+    # Step 2: Scale scores to prevent gradient issues
+    d_k = Q.shape[-1]
+    scaled_scores = scores / np.sqrt(d_k)
+    
+    # Step 3: Softmax to get probability distribution (attention weights)
+    weights = np.exp(scaled_scores) / np.sum(np.exp(scaled_scores), axis=-1, keepdims=True)
+    
+    # Step 4: Multiply weights by Values
+    output = np.dot(weights, V)
+    return output, weights`,
+    visualizerMode: "attention-matrix",
+    audioText: "Day 6. Self-Attention calculates mathematical weights representing how words in a sentence relate to each other. For example, in the sentence, the animal didn't cross the street because it was too tired, attention helps the model connect the word it to the animal, not to the street."
+  },
+  7: {
+    title: "How Transformers Are Trained",
+    category: "LLM Foundations",
+    concept: `### The Training Pipeline
+Training a modern state-of-the-art LLM is done in three distinct phases:
+
+1. **Pre-training (Unsupervised)**:
+   - The model is fed trillions of web pages.
+   - *Goal*: Predict the next token. If input is "The cat sat on the...", model adjusts parameters to output "mat".
+   - This phase creates a "base model" that knows facts but isn't helpful (it might just continue writing prompts instead of answering them).
+
+2. **Supervised Fine-Tuning (SFT)**:
+   - The base model is trained on curated prompt-response dialogues (e.g., "Q: What is a token? A: A token is...").
+   - This turns it into an "instruction-following model".
+
+3. **Alignment (RLHF & DPO)**:
+   - **RLHF (Reinforcement Learning from Human Feedback)**: Humans rank model outputs, and a reward model scores the LLM.
+   - **DPO (Direct Preference Optimization)**: A mathematically simpler version of RLHF where the model is directly updated using preferred vs. dispreferred responses.`,
+    code: `# Conceptual training loss loop
+for epoch in range(epochs):
+    for batch in dataset:
+        # Forward pass: predict next tokens
+        predictions = model(batch.inputs)
+        # Calculate loss (how far off the real next token we are)
+        loss = loss_fn(predictions, batch.targets)
+        # Backward pass: adjust parameters
+        loss.backward()
+        optimizer.step()`,
+    visualizerMode: "training-loop",
+    audioText: "Day 7. Training has three phases: Pre-training teaches raw word prediction on web text. Supervised Fine-Tuning teaches instruction-following via dialogues. Alignment, using human feedback, ensures the model behaves safely and helpfully."
+  },
+  8: {
+    title: "What is a Vector Database?",
+    category: "Vector DB & RAG",
+    concept: `### The Need for Vector Databases
+Standard databases (like MySQL or MongoDB) query data by matching exact fields or matching keyword strings. 
+
+However, LLM embeddings produce dense lists of decimals (vectors) representing meanings. Matching these requires calculating the distance between vectors. Doing this in standard databases is extremely slow because it requires comparing your search query against every single database entry (an O(N) scan).
+
+**Vector Databases** are designed specifically to index, store, and query high-dimensional vectors in sub-millisecond times, serving as an external memory bank for LLMs.`,
+    code: `# Example using ChromaDB (Popular open-source Vector DB)
+import chromadb
+
+# Initialize local database client
+client = chromadb.Client()
+
+# Create a collection of documents
+collection = client.create_collection(name="learning_notes")
+
+# Add documents (Chroma automatically embeds them under the hood)
+collection.add(
+    documents=["A token is a piece of text.", "Transformers use self-attention."],
+    ids=["doc1", "doc2"]
+)
+
+# Search collection
+results = collection.query(
+    query_texts=["How do transformers learn?"],
+    n_results=1
+)
+print("Best match:", results['documents'][0])`,
+    visualizerMode: "vector-db-overview",
+    audioText: "Day 8. Vector Databases act as long-term memory for LLMs. Standard relational databases can't quickly search through lists of floats, so vector databases index and query multidimensional numbers in milliseconds."
+  },
+  9: {
+    title: "How Data is Stored in a Vector DB",
+    category: "Vector DB & RAG",
+    concept: `### Structure of a Vector Record
+Unlike simple tabular rows, a record in a Vector DB consists of:
+1. **Vector Embedding**: The dense array of floats (e.g., \`[0.012, -0.45, ..., 0.89]\`).
+2. **Metadata Payload**: Key-value data related to the source (e.g., \`{"author": "Niyu", "source_url": "...", "page": 4}\`). This is used to filter queries.
+3. **ID**: A unique record identifier.
+4. **Original Content**: The raw text that generated the embedding, which will be injected into the LLM prompt.
+
+### Storage Optimization
+To save RAM, vector databases often write vector indexes to disk while keeping only critical layers or compressed codes in memory, balancing retrieval speed and hardware cost.`,
+    code: `# Anatomy of a vector insertion payload
+vector_record = {
+    "id": "item_104",
+    "vector": [0.012, -0.432, 0.901, -0.112], # float embedding
+    "metadata": {
+        "source": "practical_ai.pdf",
+        "chapter": 2,
+        "raw_text": "Tokens are stored in a vocabulary file."
+    }
+}`,
+    visualizerMode: "record-structure",
+    audioText: "Day 9. A vector record contains the float array embedding, a unique ID, metadata like source filename or page number, and the original text chunk. The database indexes this payload for efficient lookup."
+  },
+  10: {
+    title: "Vector Indexes & How Data is Processed",
+    category: "Vector DB & RAG",
+    concept: `### How Vector Databases Index Data
+To avoid scanning every single vector, vector databases build **Indexes** using Approximate Nearest Neighbor (ANN) algorithms:
+
+1. **HNSW (Hierarchical Navigable Small World)**:
+   - Builds a multi-layered graph where the top layer has few connections (for fast long-distance hops) and lower layers have dense connections (for local precision). Like navigating highway exits.
+2. **IVF (Inverted File Index)**:
+   - Groups vectors into clusters. At search time, it identifies the nearest cluster center and only searches vectors inside that cluster.
+3. **Product Quantization (PQ)**:
+   - Compresses vectors into small bytes, reducing memory footprint by up to 95% at the cost of slight precision loss.`,
+    code: `# Conceptual IVF indexing in Python
+# 1. Cluster vectors into centroids
+# 2. Assign document vectors to closest centroids
+# 3. Query only searches the nearest centroids
+
+# Pseudo-code for IVF Query
+def ivf_query(query_vector, centroids, cluster_buckets):
+    nearest_centroid = find_nearest(query_vector, centroids)
+    candidate_vectors = cluster_buckets[nearest_centroid]
+    # Only calculate distances for items in this cluster
+    return search_exact(query_vector, candidate_vectors)`,
+    visualizerMode: "hnsw-graph",
+    audioText: "Day 10. To search millions of vectors instantly, we build indexes. HNSW builds a layered graph to jump quickly to the correct neighborhood, while IVF clusters vectors so we only search a tiny fraction of the data."
+  },
+  11: {
+    title: "Vector Search & Distance Metrics",
+    category: "Vector DB & RAG",
+    concept: `### Measuring Vector Similarity
+How do we mathematically calculate if two vectors are similar? We use three main formulas:
+
+1. **Cosine Similarity**:
+   - Measures the angle between two vectors, ignoring their length.
+   - Values range from -1 to 1 (1 means pointing in the exact same direction). Ideal when document length varies.
+2. **Euclidean (L2) Distance**:
+   - Measures the straight-line distance between two points in space.
+   - Smaller value means closer/more similar.
+3. **Dot Product (Inner Product)**:
+   - Multiplies corresponding coordinates and sums them up.
+   - If vectors are normalized (length of 1), Dot Product is identical to Cosine Similarity. Extremely fast to compute.`,
+    code: `# Calculating distance metrics using NumPy
+import numpy as np
+
+v1 = np.array([1.0, 2.0, 3.0])
+v2 = np.array([1.5, 1.8, 3.2])
+
+# 1. Cosine Similarity
+dot_prod = np.dot(v1, v2)
+norm_v1 = np.linalg.norm(v1)
+norm_v2 = np.linalg.norm(v2)
+cosine_sim = dot_prod / (norm_v1 * norm_v2)
+
+# 2. Euclidean Distance
+euclidean_dist = np.linalg.norm(v1 - v2)
+
+print(f"Cosine Similarity: {cosine_sim:.4f}")
+print(f"Euclidean Distance: {euclidean_dist:.4f}")`,
+    visualizerMode: "distance-calc",
+    audioText: "Day 11. Vector similarity is computed using distance formulas. Cosine Similarity measures the angle between vectors, while Euclidean distance measures straight-line physical separation. Dot product computes direction and magnitude together."
+  },
+  12: {
+    title: "RAG Pipeline – Retrieval",
+    category: "Vector DB & RAG",
+    concept: `### The Retrieval Phase of RAG
+Retrieval-Augmented Generation (RAG) lets an LLM access external databases to answer questions accurately.
+
+The **Retrieval** process:
+1. User enters a query: *"What is BPE?"*
+2. System converts this query into an embedding vector using an embedding model.
+3. System sends this query vector to the Vector DB.
+4. Vector DB performs a similarity search and returns the top-K document chunks (e.g., top 3 most similar text segments).`,
+    code: `# RAG Retrieval Logic
+def retrieve_context(query, vector_db, embedding_model, k=3):
+    query_vector = embedding_model.embed(query)
+    results = vector_db.search(query_vector, top_k=k)
+    # Combine retrieved text chunks into one context string
+    context = "\\n".join([item.text for item in results])
+    return context`,
+    visualizerMode: "rag-flow",
+    audioText: "Day 12. Retrieval Augmented Generation starts by converting your question into a vector, querying a vector database, and fetching the top most similar text chunks to serve as context."
+  },
+  13: {
+    title: "RAG Pipeline – Generation",
+    category: "Vector DB & RAG",
+    concept: `### The Generation Phase of RAG
+Once we have retrieved the relevant document chunks, we inject them directly into the LLM's prompt.
+
+### Prompt Synthesis
+We build a prompt that forces the LLM to use the retrieved context. For example:
+\`\`\`
+Answer the user's question using ONLY the provided context. If you don't know the answer, say "I don't know".
+
+Context:
+[Retrieved Chunk 1]
+[Retrieved Chunk 2]
+
+Question: What is BPE?
+Answer:
+\`\`\`
+The LLM reads this combined prompt and generates a response based on the ground truth context, preventing hallucinations.`,
+    code: `# RAG Generation Logic
+def generate_answer(query, context, llm_client):
+    prompt = f"""Use the context below to answer the question.
+Context:
+{context}
+
+Question: {query}
+Answer:"""
+    
+    response = llm_client.complete(prompt)
+    return response`,
+    visualizerMode: "prompt-assembly",
+    audioText: "Day 13. Generation takes the retrieved context documents, pastes them into a system prompt instruction, and feeds this rich template to the LLM to generate an accurate, verified answer."
+  },
+  14: {
+    title: "Advanced RAG Pipelines",
+    category: "Vector DB & RAG",
+    concept: `### Beyond Simple RAG
+Basic RAG can fail if the user's query is poorly phrased or the embedding model misses keywords. Production RAG uses advanced tactics:
+
+1. **Query Rewriting**: An LLM rewrites the user's query into multiple search variants before querying the DB.
+2. **Re-ranking (Cross-Encoders)**: We retrieve 20 documents using fast vector search, then run them through a slower, highly accurate model (a Cross-Encoder) that re-orders them to put the absolute best matches first.
+3. **Hybrid Search**: Combining keyword search (BM25) and semantic vector search to find documents that match exact codes/terms as well as abstract meaning.`,
+    code: `# Conceptual Hybrid Search re-ranking
+def hybrid_search(query, vector_index, keyword_index):
+    vector_results = vector_index.search(query, k=10)
+    keyword_results = keyword_index.search(query, k=10)
+    
+    # Reciprocal Rank Fusion (RRF) to merge results
+    merged_results = rrf(vector_results, keyword_results)
+    return merged_results[:5]`,
+    visualizerMode: "hybrid-search",
+    audioText: "Day 14. Advanced RAG improves retrieval using query re-writing, hybrid search combining keywords with vectors, and cross-encoder re-ranking to place the absolute best context at the top."
+  },
+  15: {
+    title: "Introduction to Agents & ReAct",
+    category: "Agentic AI Foundations",
+    concept: `### What is an Agent?
+A basic LLM is a static text generator (input goes in, text comes out). An **AI Agent** is an LLM wrapped in a loop that allows it to think, plan, use tools, and inspect its environment to solve complex tasks.
+
+### The ReAct Framework
+ReAct stands for **Reasoning and Acting**. It is a prompt pattern that makes an LLM operate in a continuous loop:
+1. **Thought**: The model reasons about the user goal (e.g., *"I need to find the weather in Mumbai. I should use the weather search tool."*).
+2. **Action**: The model decides to run a tool with arguments (e.g., \`search_weather("Mumbai")\`).
+3. **Observation**: The system runs the tool and inputs the result back into the model context (e.g., \`"28°C, Cloudy"\`).
+4. **Thought**: The model reviews the observation and decides whether it has enough data to finish or needs another cycle.`,
+    code: `# ReAct Loop structure in Python
+def run_react_agent(user_prompt, tools):
+    chat_history = [user_prompt]
+    while True:
+        # Prompt model to output Thought + Action
+        response = llm.generate(chat_history)
+        print("Agent:", response)
+        
+        if "Final Answer:" in response:
+            return response
+            
+        action = extract_action(response) # e.g. run_tool("search_weather", "Mumbai")
+        observation = execute_tool(action, tools)
+        
+        # Feed observation back into context
+        chat_history.append(f"Observation: {observation}")`,
+    visualizerMode: "react-loop",
+    audioText: "Day 15. We start Agentic AI. Agents use loops to think, act with tools, and observe outcomes. This cycle repeats until they resolve the user request."
+  },
+  16: {
+    title: "Tool Use & Function Calling",
+    category: "Agentic AI Foundations",
+    concept: `### How Tool Use Works
+Function calling lets LLMs interface with external code. Rather than writing random text, the LLM outputs structured JSON matching a predefined schema. The host system intercepts this JSON, executes the real function, and appends the result to the chat session.`,
+    code: `tools_schema = {
+    "name": "calculate_tax",
+    "description": "Calculates tax based on income",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "income": {"type": "number"}
+        }
+    }
+}`,
+    visualizerMode: "tool-calling",
+    audioText: "Day 16. Tool use lets LLMs output formatted JSON command arguments. The application executes these functions and returns the outcome."
+  },
+  17: {
+    title: "Agent Memory Systems",
+    category: "Agentic AI Foundations",
+    concept: `### Types of Agent Memory
+1. **Short-Term Memory**: Storing recent chat history in the context window.
+2. **Long-Term Memory**: Storing previous sessions, preferences, and facts in a Vector DB.
+3. **Episodic Memory**: Saving execution traces of previous successful tasks.`,
+    code: `# Simple sliding window memory
+chat_history = chat_history[-10:] # Keeps only the last 10 messages`,
+    visualizerMode: "memory-viewer",
+    audioText: "Day 17. Memory helps agents remember past interactions. Short term memory manages recent turns, while long term memory queries vector databases for past session facts."
+  },
+  18: {
+    title: "Planning & Reasoning",
+    category: "Agentic AI Foundations",
+    concept: `### Planning Methods
+- **Chain-of-Thought (CoT)**: Prompting the model to write its reasoning step-by-step.
+- **Tree-of-Thoughts (ToT)**: Generating multiple reasoning branches and scoring each path.
+- **Self-Reflection (ReFlexion)**: Having the agent inspect its own mistakes and re-run.`,
+    code: `prompt = "Solve this step by step. Show your calculations first."`,
+    visualizerMode: "planning-trees",
+    audioText: "Day 18. Planning strategies like Chain of Thought break down math and logic into steps, while Tree of Thoughts explores multiple solution paths."
+  },
+  19: {
+    title: "Coding a Custom Agent",
+    category: "Agentic AI Foundations",
+    concept: `### Coding from Scratch
+Write a Python script that calls a local API, evaluates calculations, and maintains a clean console output representing the ReAct loop.`,
+    code: `# Coding a simple math agent loop...`,
+    visualizerMode: "code-runner",
+    audioText: "Day 19. Today you build a complete single agent loop from scratch, handling tool execution and parsing in a simple loop."
+  },
+  20: {
+    title: "Agent Evaluation & Debugging",
+    category: "Agentic AI Foundations",
+    concept: `### Debugging Loops
+Agents can easily get stuck in infinite execution loops if prompts are weak. Evaluating performance requires testing against static benchmark datasets.`,
+    code: `# Debugging infinite agent loops...`,
+    visualizerMode: "debugger",
+    audioText: "Day 20. Learn to identify and break agent loops. We look at agent trace logs to optimize prompt instruction constraints."
+  },
+  21: {
+    title: "Agent Guardrails & Safety",
+    category: "Agentic AI Foundations",
+    concept: `### Security
+Input sanitization, output structural parsing validation, and preventing execution of dangerous commands (like raw shell commands) by sandboxing tool codes.`,
+    code: `def safe_tool_exec(cmd):
+    # Restrict cmd parameters to prevent shell injection!`,
+    visualizerMode: "guardrails",
+    audioText: "Day 21. Learn safety guardrails to validate user inputs, format outputs safely, and sandbox tools from causing damage."
+  },
+  22: {
+    title: "Why Multi-Agent Systems?",
+    category: "Multi-Agent & Production",
+    concept: `### Specialization
+Single agents break down when given too many tasks. Multi-agent systems assign distinct roles (e.g., Researcher, Copywriter, Reviewer) that communicate with each other.`,
+    code: `# Researcher Agent + Writer Agent`,
+    visualizerMode: "multi-agent-overview",
+    audioText: "Day 22. Multi-agent systems delegate complex problems to specialized agents, preventing context overload."
+  },
+  23: {
+    title: "Multi-Agent Communication",
+    category: "Multi-Agent & Production",
+    concept: `### Routing Topologies
+- **Sequential**: Agent A passes output to Agent B.
+- **Hierarchical**: Supervisor Agent routes subtasks to Worker Agents.
+- **Collaborative**: Open group chat with a shared history.`,
+    code: `# Multi-agent routing code...`,
+    visualizerMode: "communication-graph",
+    audioText: "Day 23. Learn routing topologies like sequential chains and hierarchical manager structures for agent communication."
+  },
+  24: {
+    title: "Multi-Agent Frameworks",
+    category: "Multi-Agent & Production",
+    concept: `### LangGraph, CrewAI, AutoGen
+Explore modern frameworks. CrewAI excels at task-oriented crews, LangGraph offers stateful graph-based control, and AutoGen focuses on conversational agents.`,
+    code: `from crewai import Agent, Crew, Task
+# Crew definitions...`,
+    visualizerMode: "frameworks-viewer",
+    audioText: "Day 24. Overview of modern frameworks. LangGraph for state management, CrewAI for structured tasks, and AutoGen for dialogue."
+  },
+  25: {
+    title: "Multi-Agent Capstone Design",
+    category: "Multi-Agent & Production",
+    concept: `### Design Phase
+Sketch out the workflow, message boundaries, and tool structures for a multi-agent system that searches the web and writes clean executive briefs.`,
+    code: `# Workflow sketch...`,
+    visualizerMode: "capstone-designer",
+    audioText: "Day 25. Design a capstone project. Map out data schemas and message loops for a writer-researcher crew."
+  },
+  26: {
+    title: "Multi-Agent Implementation (Part 1)",
+    category: "Multi-Agent & Production",
+    concept: `### Writing the Agents
+Set up the environment, define agent behaviors, build tool connectors, and initialize the communication interface.`,
+    code: `# Crew setup...`,
+    visualizerMode: "capstone-builder",
+    audioText: "Day 26. Write the agent specifications and wire up their access to search APIs."
+  },
+  27: {
+    title: "Multi-Agent Implementation (Part 2)",
+    category: "Multi-Agent & Production",
+    concept: `### Wiring Communication
+Create message passing loops, validation checks, and output formatting parsers.`,
+    code: `# Routing loops...`,
+    visualizerMode: "capstone-wiring",
+    audioText: "Day 27. Implement the communication loop, enabling the writer agent to critique the researcher."
+  },
+  28: {
+    title: "Multi-Agent Implementation (Part 3)",
+    category: "Multi-Agent & Production",
+    concept: `### Running the Crew
+Run the full system locally, input a topic, and observe the live multi-agent dialogue solving the prompt.`,
+    code: `# Run execution...`,
+    visualizerMode: "capstone-runner",
+    audioText: "Day 28. Run the completed capstone project, observing the live logs of agents collaborating."
+  },
+  29: {
+    title: "Evaluation & Optimization",
+    category: "Multi-Agent & Production",
+    concept: `### Agent Quality Assurance
+How to track accuracy metrics. Logging latency, measuring token counts, and testing prompt modifications.`,
+    code: `# Performance tracking...`,
+    visualizerMode: "eval-graphs",
+    audioText: "Day 29. Evaluate latency, cost, and reliability of your agent team using tracing techniques."
+  },
+  30: {
+    title: "Agent Deployment & Beyond",
+    category: "Multi-Agent & Production",
+    concept: `### Going to Production
+Expose the agent as a REST API, connect it to a frontend UI, rate-limit access, and keep learning current agentic patterns.`,
+    code: `# FastAPI wrapper for agent deployment...`,
+    visualizerMode: "deployment-diagram",
+    audioText: "Day 30. Congratulations! You've completed the curriculum. Today we learn how to deploy agents to production as REST APIs."
+  }
+};
+
+// Common tutor prompts for mock chatbot responses
+const tutorResponses = {
+  "tokens": "Tokens are word fragments or characters that an LLM uses to process text. For example, the word 'unbelievable' might be split into 'un', 'believ', and 'able'. They are represented as numerical IDs inside a vocabulary map file.",
+  "transformers": "Transformers read all tokens simultaneously using Self-Attention. During pre-training, they learn next-token prediction, and during fine-tuning, they learn to answer questions and align with human guidelines.",
+  "embeddings": "Embeddings are lists of coordinates that map a word's meaning. Similar concepts are placed near each other in this multidimensional map.",
+  "vector db": "Vector databases store floating point embeddings, metadata, and doc chunks. They construct graphs (like HNSW) or clusters (like IVF) to perform rapid similarity search in milliseconds."
+};
+
+</script>
+  <script>
+// Interactive Concept Visualizer for Lumina Tutor
+class LuminaVisualizer {
+  constructor(canvasContainerId) {
+    this.container = document.getElementById(canvasContainerId);
+    this.currentMode = null;
+  }
+
+  setMode(mode) {
+    this.currentMode = mode;
+    this.container.innerHTML = ""; // Clear visualizer
+    
+    switch (mode) {
+      case "tokenizer":
+        this.initTokenizer();
+        break;
+      case "bpe-merger":
+        this.initBPEMerger();
+        break;
+      case "embeddings-space":
+        this.initEmbeddingsSpace();
+        break;
+      case "embedding-types":
+        this.initEmbeddingTypes();
+        break;
+      case "transformer-overview":
+        this.initTransformerOverview();
+        break;
+      case "attention-matrix":
+        this.initAttentionMatrix();
+        break;
+      case "training-loop":
+        this.initTrainingLoop();
+        break;
+      case "vector-db-overview":
+        this.initVectorDBOverview();
+        break;
+      case "record-structure":
+        this.initRecordStructure();
+        break;
+      case "hnsw-graph":
+        this.initHNSWGraph();
+        break;
+      case "distance-calc":
+        this.initDistanceCalc();
+        break;
+      case "rag-flow":
+        this.initRAGFlow();
+        break;
+      case "prompt-assembly":
+        this.initPromptAssembly();
+        break;
+      case "hybrid-search":
+        this.initHybridSearch();
+        break;
+      case "react-loop":
+        this.initReActLoop();
+        break;
+      default:
+        this.initFallback(mode);
+        break;
+    }
+  }
+
+  // Fallback for stubbed days
+  initFallback(mode) {
+    const title = mode ? mode.replace("-", " ").toUpperCase() : "VISUALIZER";
+    this.container.innerHTML = `
+      <div class="visualizer-fallback">
+        <div class="pulse-ring"></div>
+        <div class="visualizer-icon">⚙️</div>
+        <h3>Interactive Playground: ${title}</h3>
+        <p>This module simulates processes dynamically for the active topic. Use the menu panel to browse the syllabus roadmap.</p>
+        <button class="action-btn" onclick="alert('Visualizer mock action executed!')">Run Simulation</button>
+      </div>
+    `;
+  }
+
+  // Day 1: Tokenizer
+  initTokenizer() {
+    this.container.innerHTML = `
+      <div class="tokenizer-visualizer">
+        <h3>Live Subword Tokenizer</h3>
+        <p class="desc">Type some text below to see how a model breaks it down into subword tokens and maps them to numerical IDs.</p>
+        <input type="text" id="token-input" value="Antigravity agents are learning transformers" class="premium-input" />
+        
+        <div class="token-output-container">
+          <label>Color-Coded Subword Tokens:</label>
+          <div id="token-chunks" class="token-chunks-row"></div>
+        </div>
+
+        <div class="token-ids-container">
+          <label>Mapped Token IDs (Input to LLM):</label>
+          <div id="token-ids" class="token-ids-row"></div>
+        </div>
+
+        <div class="vocab-table-container">
+          <label>Vocabulary Lookup Mappings:</label>
+          <div id="vocab-lookup" class="vocab-lookup-grid"></div>
+        </div>
+      </div>
+    `;
+
+    const input = document.getElementById("token-input");
+    const update = () => {
+      const text = input.value;
+      const chunksEl = document.getElementById("token-chunks");
+      const idsEl = document.getElementById("token-ids");
+      const vocabEl = document.getElementById("vocab-lookup");
+      
+      chunksEl.innerHTML = "";
+      idsEl.innerHTML = "";
+      vocabEl.innerHTML = "";
+
+      if (!text.trim()) return;
+
+      // Mock Tokenizer dictionary rules
+      const mockDict = {
+        "anti": 1045,
+        "gravity": 8792,
+        "agent": 1642,
+        "agents": 18456,
+        "learn": 4235,
+        "ing": 284,
+        "transform": 9043,
+        "er": 302,
+        "ers": 1502,
+        "are": 389,
+        "learning": 12845,
+        "transformers": 24056,
+        "is": 318,
+        "amazing": 6054,
+        "a": 257,
+        "the": 262,
+        "to": 281
+      };
+
+      // Naive splitter
+      const words = text.split(/\s+/);
+      let colors = ["#ff007f", "#00f0ff", "#39ff14", "#ffb000", "#9d00ff", "#00ffff"];
+      let colorIdx = 0;
+
+      words.forEach(word => {
+        let cleanWord = word.toLowerCase().replace(/[^a-z]/g, "");
+        let tokensFound = [];
+        
+        if (mockDict[cleanWord]) {
+          tokensFound.push({ text: word, id: mockDict[cleanWord] });
+        } else {
+          // Attempt simple subword split
+          let splitSuccess = false;
+          for (let key in mockDict) {
+            if (key.length > 2 && cleanWord.startsWith(key)) {
+              const suffix = cleanWord.slice(key.length);
+              if (mockDict[suffix]) {
+                tokensFound.push({ text: word.slice(0, key.length), id: mockDict[key] });
+                tokensFound.push({ text: word.slice(key.length), id: mockDict[suffix] });
+                splitSuccess = true;
+                break;
+              }
+            }
+          }
+          if (!splitSuccess) {
+            // Char split fallback
+            for (let i = 0; i < word.length; i++) {
+              const char = word[i];
+              const code = char.charCodeAt(0) + 100;
+              tokensFound.push({ text: char, id: code });
+            }
+          }
+        }
+
+        tokensFound.forEach(t => {
+          const color = colors[colorIdx % colors.length];
+          colorIdx++;
+
+          // Add to chunk
+          const chunkSpan = document.createElement("span");
+          chunkSpan.className = "token-chunk";
+          chunkSpan.innerText = t.text;
+          chunkSpan.style.borderColor = color;
+          chunkSpan.style.color = color;
+          chunksEl.appendChild(chunkSpan);
+
+          // Add to IDs
+          const idSpan = document.createElement("span");
+          idSpan.className = "token-id-badge";
+          idSpan.innerText = t.id;
+          idSpan.style.backgroundColor = color + "22";
+          idSpan.style.color = color;
+          idsEl.appendChild(idSpan);
+
+          // Add to Vocab Grid
+          const vocabRow = document.createElement("div");
+          vocabRow.className = "vocab-row";
+          vocabRow.innerHTML = `<span class="vocab-str" style="color: ${color}">'${t.text}'</span> <span class="arrow">➔</span> <span class="vocab-id">${t.id}</span>`;
+          vocabEl.appendChild(vocabRow);
+        });
+
+        // Add space token
+        const spaceSpan = document.createElement("span");
+        spaceSpan.className = "token-chunk space-token";
+        spaceSpan.innerText = "␣";
+        chunksEl.appendChild(spaceSpan);
+
+        const spaceIdSpan = document.createElement("span");
+        spaceIdSpan.className = "token-id-badge space-token-id";
+        spaceIdSpan.innerText = "220";
+        idsEl.appendChild(spaceIdSpan);
+      });
+    };
+
+    input.addEventListener("input", update);
+    update();
+  }
+
+  // Day 2: BPE Merger Animation
+  initBPEMerger() {
+    this.container.innerHTML = `
+      <div class="bpe-visualizer">
+        <h3>Byte-Pair Encoding (BPE) Merger</h3>
+        <p class="desc">BPE builds vocabularies by iteratively pairing the most common adjacent characters. Watch character sequences merge below.</p>
+        
+        <div class="bpe-grid">
+          <div class="bpe-step" id="bpe-s1">
+            <span class="step-num">Step 1</span>
+            <div class="nodes"><span class="node">u</span> <span class="node">g</span> <span class="node">l</span> <span class="node">y</span></div>
+            <p>Characters separated</p>
+          </div>
+          <div class="bpe-step" id="bpe-s2">
+            <span class="step-num">Step 2</span>
+            <div class="nodes"><span class="node active">u</span><span class="node active">g</span> <span class="node">l</span> <span class="node">y</span></div>
+            <p>Identify frequent pair: 'u' + 'g'</p>
+          </div>
+          <div class="bpe-step" id="bpe-s3">
+            <span class="step-num">Step 3</span>
+            <div class="nodes"><span class="node merged">ug</span> <span class="node">l</span> <span class="node">y</span></div>
+            <p>Merge 'ug' into a new token</p>
+          </div>
+          <div class="bpe-step" id="bpe-s4">
+            <span class="step-num">Step 4</span>
+            <div class="nodes"><span class="node merged">ug</span> <span class="node active">l</span><span class="node active">y</span></div>
+            <p>Next frequent pair: 'l' + 'y'</p>
+          </div>
+          <div class="bpe-step" id="bpe-s5">
+            <span class="step-num">Step 5</span>
+            <div class="nodes"><span class="node merged">ug</span> <span class="node merged">ly</span></div>
+            <p>Final subwords: 'ug' and 'ly'</p>
+          </div>
+        </div>
+
+        <button class="action-btn" id="btn-animate-bpe">Animate Merge Sequence</button>
+      </div>
+    `;
+
+    const steps = ["bpe-s1", "bpe-s2", "bpe-s3", "bpe-s4", "bpe-s5"];
+    let idx = 0;
+    
+    const animate = () => {
+      steps.forEach(id => document.getElementById(id).classList.remove("visible"));
+      idx = 0;
+      
+      const interval = setInterval(() => {
+        if (idx < steps.length) {
+          document.getElementById(steps[idx]).classList.add("visible");
+          idx++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 1000);
+    };
+
+    document.getElementById("btn-animate-bpe").addEventListener("click", animate);
+    animate();
+  }
+
+  // Day 3: Embeddings 3D Space Simulation
+  initEmbeddingsSpace() {
+    this.container.innerHTML = `
+      <div class="embeddings-visualizer">
+        <h3>Geometric Semantic Vector Space</h3>
+        <p class="desc">Hover over words to see their coordinate positions. Click 'Solve Analogy' to compute <strong>King - Man + Woman = Queen</strong>.</p>
+        
+        <div class="embed-box" id="embed-svg-container">
+          <svg viewBox="0 0 400 300" width="100%" height="240" style="background:#0a0a18; border-radius:8px;">
+            <!-- Axes -->
+            <line x1="50" y1="250" x2="350" y2="250" stroke="#222" stroke-width="2"/>
+            <line x1="50" y1="250" x2="50" y2="50" stroke="#222" stroke-width="2"/>
+            <line x1="50" y1="250" x2="150" y2="150" stroke="#222" stroke-width="1.5" stroke-dasharray="4"/>
+            
+            <text x="340" y="270" fill="#444" font-size="10">X: Gender</text>
+            <text x="10" y="60" fill="#444" font-size="10">Y: Royalty</text>
+            
+            <!-- Royalty Cluster -->
+            <g id="node-king" class="embed-node" transform="translate(120, 90)">
+              <circle r="6" fill="#ff007f" />
+              <text x="10" y="4" fill="#fff" font-size="11">King (0.85, 0.90)</text>
+            </g>
+            <g id="node-queen" class="embed-node" transform="translate(280, 90)">
+              <circle r="6" fill="#00f0ff" />
+              <text x="10" y="4" fill="#fff" font-size="11">Queen (0.15, 0.92)</text>
+            </g>
+            
+            <!-- Commoner Cluster -->
+            <g id="node-man" class="embed-node" transform="translate(120, 210)">
+              <circle r="6" fill="#39ff14" />
+              <text x="10" y="4" fill="#fff" font-size="11">Man (0.82, 0.10)</text>
+            </g>
+            <g id="node-woman" class="embed-node" transform="translate(280, 210)">
+              <circle r="6" fill="#ffb000" />
+              <text x="10" y="4" fill="#fff" font-size="11">Woman (0.12, 0.11)</text>
+            </g>
+
+            <!-- Vector Line calculations -->
+            <path id="analogy-line" d="" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5" />
+          </svg>
+        </div>
+
+        <div class="analogy-status" id="analogy-math">
+          Equation: <span class="glowing-text">Waiting to calculate...</span>
+        </div>
+        <button class="action-btn" id="btn-analogy">Solve Analogy (King - Man + Woman)</button>
+      </div>
+    `;
+
+    document.getElementById("btn-analogy").addEventListener("click", () => {
+      const line = document.getElementById("analogy-line");
+      const math = document.getElementById("analogy-math");
+      
+      // Draw transition King -> Man (subtracting man coordinates), then + Woman coordinates
+      line.setAttribute("d", "M 120 90 L 120 210 L 280 210 L 280 90");
+      line.style.stroke = "#ff00aa";
+      line.style.animation = "dash 3s linear infinite";
+
+      math.innerHTML = `
+        <span style="color:#ff007f">King [0.85, 0.90]</span> - 
+        <span style="color:#39ff14">Man [0.82, 0.10]</span> + 
+        <span style="color:#ffb000">Woman [0.12, 0.11]</span> 
+        <span class="arrow">➔</span> 
+        <span style="color:#00f0ff" class="glowing-text">Queen [0.15, 0.91]</span>
+      `;
+    });
+  }
+
+  // Day 4: Static vs Contextual Embeddings
+  initEmbeddingTypes() {
+    this.container.innerHTML = `
+      <div class="embeddings-types-visualizer">
+        <h3>Static vs. Contextual Embeddings</h3>
+        <p class="desc">Observe how the word <strong>"bank"</strong> changes coordinates based on surrounding context in Contextual Embeddings, but remains static in Word2Vec.</p>
+        
+        <div class="slider-box">
+          <label>Choose Sentence Context:</label>
+          <select id="context-select" class="premium-select">
+            <option value="money">"I will deposit money in the bank."</option>
+            <option value="river">"The boat docked at the river bank."</option>
+          </select>
+        </div>
+
+        <div class="embed-comparison-grid">
+          <div class="embed-card">
+            <h4>Static Embeddings (Word2Vec)</h4>
+            <div class="vector-display" id="static-vector">
+              [0.45, -0.12, 0.78, 0.05]
+            </div>
+            <p class="label">Word "bank" coordinate remains locked.</p>
+          </div>
+          <div class="embed-card">
+            <h4>Contextual Embeddings (BERT/GPT)</h4>
+            <div class="vector-display dynamic-vector" id="context-vector">
+              [0.82, -0.44, 0.15, 0.91]
+            </div>
+            <p class="label">Word "bank" shifts vector coordinate dynamically!</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const select = document.getElementById("context-select");
+    const contextVec = document.getElementById("context-vector");
+
+    select.addEventListener("change", (e) => {
+      if (e.target.value === "money") {
+        contextVec.innerText = "[0.82, -0.44, 0.15, 0.91]";
+        contextVec.style.color = "#00f0ff";
+      } else {
+        contextVec.innerText = "[-0.12, 0.89, -0.63, 0.02]";
+        contextVec.style.color = "#39ff14";
+      }
+    });
+  }
+
+  // Day 5: Transformer History/Overview
+  initTransformerOverview() {
+    this.container.innerHTML = `
+      <div class="transformer-overview-visual">
+        <h3>Sequential RNN bottleneck vs. Parallel Transformer</h3>
+        
+        <div class="comparison-row">
+          <div class="architecture-visual">
+            <h4>Recurrent Neural Network (Slow)</h4>
+            <div class="rnn-steps">
+              <span class="rnn-node active">The</span> ➔ 
+              <span class="rnn-node">cat</span> ➔ 
+              <span class="rnn-node">sat</span> ➔ 
+              <span class="rnn-node">on</span>
+            </div>
+            <p class="desc-text">Processes word-by-word. Cannot parallelize.</p>
+          </div>
+          
+          <div class="architecture-visual">
+            <h4>Transformer (Parallel)</h4>
+            <div class="transformer-matrix-block">
+              <div class="t-node">The</div>
+              <div class="t-node">cat</div>
+              <div class="t-node">sat</div>
+              <div class="t-node">on</div>
+            </div>
+            <div class="parallel-arrows">▲ ▲ ▲ ▲</div>
+            <p class="desc-text">Processes all words in parallel. Super fast training.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Day 6: Self-Attention Matrix
+  initAttentionMatrix() {
+    const sentence = ["The", "animal", "didn't", "cross", "street", "because", "it", "was", "tired"];
+    // High weights: "it" -> "animal"
+    
+    let gridHTML = "";
+    sentence.forEach((rowWord, rIdx) => {
+      gridHTML += `<div class="matrix-row"><span class="matrix-row-header">${rowWord}</span>`;
+      sentence.forEach((colWord, cIdx) => {
+        let weight = 0.05;
+        if (rowWord === colWord) weight = 0.6;
+        if (rowWord === "it" && colWord === "animal") weight = 0.85;
+        if (rowWord === "it" && colWord === "street") weight = 0.12;
+        if (rowWord === "tired" && colWord === "animal") weight = 0.70;
+        
+        const opacity = weight;
+        const color = `rgba(0, 240, 255, ${opacity})`;
+        gridHTML += `<span class="matrix-cell" data-weight="${weight.toFixed(2)}" style="background-color: ${color};" title="${rowWord} ➔ ${colWord}: ${weight.toFixed(2)}">${weight.toFixed(2)}</span>`;
+      });
+      gridHTML += `</div>`;
+    });
+
+    this.container.innerHTML = `
+      <div class="attention-visualizer">
+        <h3>Self-Attention Weight Matrix</h3>
+        <p class="desc">Hover over cells to see how much attention the word on the left pays to the word on the top. Notice how <strong>"it"</strong> pays high attention to <strong>"animal"</strong>.</p>
+        
+        <div class="matrix-headers-top">
+          <span class="spacer"></span>
+          ${sentence.map(w => `<span class="col-hdr">${w}</span>`).join("")}
+        </div>
+        
+        <div class="matrix-grid">
+          ${gridHTML}
+        </div>
+        <div class="attention-focused-stat" id="cell-detail">Hover over any matrix cell...</div>
+      </div>
+    `;
+
+    const cells = this.container.querySelectorAll(".matrix-cell");
+    const detail = document.getElementById("cell-detail");
+    
+    cells.forEach(cell => {
+      cell.addEventListener("mouseover", (e) => {
+        const title = e.target.getAttribute("title");
+        detail.innerHTML = `<span class="glowing-text">${title}</span>`;
+      });
+    });
+  }
+
+  // Day 7: Training Loop
+  initTrainingLoop() {
+    this.container.innerHTML = `
+      <div class="training-visual">
+        <h3>LLM Training Pipeline Iteration</h3>
+        <p class="desc">Simulate a single gradient descent weight adjustments epoch step.</p>
+        
+        <div class="training-nodes-block">
+          <div class="node-box" id="box-pretrain">
+            <h4>1. Pre-training</h4>
+            <div class="bar-fill" style="width: 100%;">Web Corpus</div>
+          </div>
+          <div class="node-box" id="box-sft">
+            <h4>2. Fine-tuning</h4>
+            <div class="bar-fill" style="width: 40%;">Q&A pairs</div>
+          </div>
+          <div class="node-box" id="box-dpo">
+            <h4>3. Alignment</h4>
+            <div class="bar-fill" style="width: 15%;">Human Feedback</div>
+          </div>
+        </div>
+
+        <button class="action-btn" id="btn-run-train">Simulate Epoch Run</button>
+      </div>
+    `;
+
+    document.getElementById("btn-run-train").addEventListener("click", () => {
+      const bars = document.querySelectorAll(".bar-fill");
+      bars.forEach(bar => {
+        bar.style.transition = "width 2s ease";
+        bar.style.width = "100%";
+      });
+      alert("Epoch run completed. Loss minimized!");
+    });
+  }
+
+  // Day 8: Vector DB Overview
+  initVectorDBOverview() {
+    this.container.innerHTML = `
+      <div class="vectordb-overview">
+        <h3>Relational (SQL) vs Vector Database</h3>
+        <div class="comparison-grid">
+          <div class="db-card">
+            <h4>SQL Database Query</h4>
+            <div class="query-box">SELECT * WHERE text LIKE '%token%'</div>
+            <p class="label">Matches only exact characters. Fails on synonyms.</p>
+          </div>
+          <div class="db-card">
+            <h4>Vector Database Search</h4>
+            <div class="query-box">CosineDistance(query_vec, doc_vec) &lt; 0.15</div>
+            <p class="label">Retrieves by conceptual meaning and similarity.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Day 9: Vector record anatomy
+  initRecordStructure() {
+    this.container.innerHTML = `
+      <div class="record-structure-visual">
+        <h3>Anatomy of a Vector DB Record</h3>
+        <div class="record-box-details">
+          <div class="field-item"><span class="f-lbl">ID:</span> <span class="f-val">"doc_1092"</span></div>
+          <div class="field-item"><span class="f-lbl">Vector:</span> <span class="f-val">[0.0142, -0.9201, 0.4431, ..., -0.119] (1536 float elements)</span></div>
+          <div class="field-item">
+            <span class="f-lbl">Metadata:</span>
+            <div class="meta-sub">
+              <div>"filename": "llm_tutor.pdf"</div>
+              <div>"page": 4</div>
+              <div>"chapter": "Transformers"</div>
+            </div>
+          </div>
+          <div class="field-item"><span class="f-lbl">Document Chunk:</span> <span class="f-val">"Self-attention connects arbitrary word pairs."</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Day 10: HNSW Index
+  initHNSWGraph() {
+    this.container.innerHTML = `
+      <div class="hnsw-visualizer">
+        <h3>HNSW Index Routing Simulator</h3>
+        <p class="desc">Click 'Route Vector Search' to see how HNSW hops across layers to locate the target vector fast.</p>
+        
+        <svg viewBox="0 0 400 240" width="100%" height="200" style="background:#090915; border-radius:6px;">
+          <!-- Layer 2 (Sparse) -->
+          <text x="10" y="40" fill="#ff007f" font-size="11">Layer 2 (Highway)</text>
+          <line x1="50" y1="50" x2="350" y2="50" stroke="#333" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="6" fill="#ff007f"/>
+          <circle cx="200" cy="50" r="6" fill="#ff007f"/>
+          <circle cx="350" cy="50" r="6" fill="#ff007f"/>
+
+          <!-- Layer 1 (Medium) -->
+          <text x="10" y="110" fill="#39ff14" font-size="11">Layer 1</text>
+          <line x1="50" y1="120" x2="350" y2="120" stroke="#333" stroke-dasharray="2"/>
+          <circle cx="50" cy="120" r="4" fill="#39ff14"/>
+          <circle cx="120" cy="120" r="4" fill="#39ff14"/>
+          <circle cx="200" cy="120" r="4" fill="#39ff14"/>
+          <circle cx="270" cy="120" r="4" fill="#39ff14"/>
+          <circle cx="350" cy="120" r="4" fill="#39ff14"/>
+
+          <!-- Layer 0 (Dense) -->
+          <text x="10" y="180" fill="#00f0ff" font-size="11">Layer 0 (All Nodes)</text>
+          <circle cx="50" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="90" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="120" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="160" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="200" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="240" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="270" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="310" cy="190" r="3" fill="#00f0ff"/>
+          <circle cx="350" cy="190" r="3" fill="#00f0ff"/>
+
+          <!-- Query point -->
+          <circle id="query-dot" cx="50" cy="50" r="8" fill="#fff" stroke="#ff007f" stroke-width="2" style="transition: all 1.5s ease;"/>
+        </svg>
+
+        <button class="action-btn" id="btn-hnsw-route">Route Vector Search</button>
+      </div>
+    `;
+
+    document.getElementById("btn-hnsw-route").addEventListener("click", () => {
+      const qDot = document.getElementById("query-dot");
+      
+      // Step 1: Hop to middle Layer 2 node
+      setTimeout(() => {
+        qDot.setAttribute("cx", "200");
+        qDot.setAttribute("cy", "50");
+      }, 500);
+      
+      // Step 2: Drop to Layer 1, shift right
+      setTimeout(() => {
+        qDot.setAttribute("cx", "270");
+        qDot.setAttribute("cy", "120");
+        qDot.style.stroke = "#39ff14";
+      }, 1500);
+
+      // Step 3: Drop to Layer 0 target
+      setTimeout(() => {
+        qDot.setAttribute("cx", "310");
+        qDot.setAttribute("cy", "190");
+        qDot.style.stroke = "#00f0ff";
+      }, 2500);
+    });
+  }
+
+  // Day 11: Distance Metrics
+  initDistanceCalc() {
+    this.container.innerHTML = `
+      <div class="distance-calc-visual">
+        <h3>Vector Distance Calculator</h3>
+        <p class="desc">Drag the slider to change the angle between Query Vector and Document Vector. See Cosine Similarity dynamically re-calculate.</p>
+        
+        <div class="metrics-workspace">
+          <svg viewBox="0 0 200 200" width="160" height="160" style="background:#090915; border-radius:50%; margin: 10px auto; display:block;">
+            <line x1="100" y1="100" x2="180" y2="100" stroke="#ff007f" stroke-width="3" id="vec-query"/>
+            <line x1="100" y1="100" x2="100" y2="20" stroke="#00f0ff" stroke-width="3" id="vec-doc"/>
+            <circle cx="100" cy="100" r="4" fill="#fff"/>
+          </svg>
+          
+          <div class="slider-wrapper">
+            <input type="range" id="angle-slider" min="0" max="180" value="90" class="premium-slider" />
+          </div>
+          
+          <div class="results-box">
+            <div>Angle: <span id="val-angle" style="color: #ffb000;">90°</span></div>
+            <div>Cosine Similarity: <span id="val-cosine" class="glowing-text" style="color: #00f0ff;">0.00</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const slider = document.getElementById("angle-slider");
+    const vecDoc = document.getElementById("vec-doc");
+    const valAngle = document.getElementById("val-angle");
+    const valCosine = document.getElementById("val-cosine");
+
+    slider.addEventListener("input", (e) => {
+      const angle = parseInt(e.target.value);
+      valAngle.innerText = `${angle}°`;
+      
+      const cosine = Math.cos(angle * Math.PI / 180).toFixed(4);
+      valCosine.innerText = cosine;
+
+      // Adjust coordinate endpoint based on angle
+      const rad = (90 - angle) * Math.PI / 180;
+      const x = 100 + 80 * Math.cos(rad);
+      const y = 100 - 80 * Math.sin(rad);
+      
+      vecDoc.setAttribute("x2", x);
+      vecDoc.setAttribute("y2", y);
+    });
+  }
+
+  // Day 12: RAG Flow Visual
+  initRAGFlow() {
+    this.container.innerHTML = `
+      <div class="rag-flow-visualizer">
+        <h3>Complete RAG Retrieval Pathway</h3>
+        <div class="rag-stages">
+          <div class="stage-bubble active" id="rag-q">1. User Query</div>
+          <div class="stage-arrow">➔</div>
+          <div class="stage-bubble" id="rag-embed">2. Embedding Model</div>
+          <div class="stage-arrow">➔</div>
+          <div class="stage-bubble" id="rag-db">3. Vector Database</div>
+          <div class="stage-arrow">➔</div>
+          <div class="stage-bubble" id="rag-res">4. Top-K Context Chunks</div>
+        </div>
+        <button class="action-btn" id="btn-run-rag">Simulate Pipeline</button>
+      </div>
+    `;
+
+    document.getElementById("btn-run-rag").addEventListener("click", () => {
+      const steps = ["rag-q", "rag-embed", "rag-db", "rag-res"];
+      steps.forEach(s => document.getElementById(s).classList.remove("active"));
+      
+      let step = 0;
+      const loop = setInterval(() => {
+        if (step < steps.length) {
+          document.getElementById(steps[step]).classList.add("active");
+          step++;
+        } else {
+          clearInterval(loop);
+        }
+      }, 800);
+    });
+  }
+
+  // Day 13: Prompt Assembly
+  initPromptAssembly() {
+    this.container.innerHTML = `
+      <div class="prompt-assembly-visual">
+        <h3>LLM Prompt Assembly Template</h3>
+        <p class="desc">Retrieved document chunks are injected directly into a system prompt wrapper before execution.</p>
+        <div class="prompt-box">
+          <div class="sys-segment">&lt;System Prompt&gt; Answer the question using ONLY the context:</div>
+          <div class="chunk-segment">[Retrieved context data: "BPE maps character pairs to IDs."]</div>
+          <div class="query-segment">User: What is BPE?</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Day 14: Hybrid Search
+  initHybridSearch() {
+    this.container.innerHTML = `
+      <div class="hybrid-search-visual">
+        <h3>Hybrid Search & RRF Merging</h3>
+        <div class="hybrid-cols">
+          <div class="search-channel">
+            <h5>Dense Vector Search</h5>
+            <div class="list-item">1. Semantic concepts (Score: 0.92)</div>
+            <div class="list-item">2. Context matches (Score: 0.81)</div>
+          </div>
+          <div class="search-channel">
+            <h5>Sparse Keyword (BM25)</h5>
+            <div class="list-item">1. Exact term matches (Score: 12.4)</div>
+            <div class="list-item">2. Code serial IDs (Score: 9.8)</div>
+          </div>
+        </div>
+        <div class="merged-channel">
+          <h5>Reciprocal Rank Fusion (RRF) Output</h5>
+          <div class="list-item glowing-item">Merged matches rank list</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Day 15: ReAct Loop Step-by-Step
+  initReActLoop() {
+    this.container.innerHTML = `
+      <div class="react-visualizer">
+        <h3>ReAct Agent Loop Execution</h3>
+        <p class="desc">Follow the steps of an agent executing calculations dynamically.</p>
+        
+        <div class="react-step-container">
+          <div class="react-step-node" id="node-thought"><strong>Thought:</strong> I need to fetch the stock price of Google. I will call Yahoo Finance tool.</div>
+          <div class="react-step-node" id="node-action"><strong>Action:</strong> YahooFinance("GOOG")</div>
+          <div class="react-step-node" id="node-observation"><strong>Observation:</strong> $175.25 (+1.2%)</div>
+          <div class="react-step-node" id="node-final"><strong>Final Answer:</strong> Google (GOOG) is trading at $175.25, up 1.2% today.</div>
+        </div>
+        
+        <button class="action-btn" id="btn-react-step">Next Step Cycle</button>
+      </div>
+    `;
+
+    const nodes = ["node-thought", "node-action", "node-observation", "node-final"];
+    let currentIdx = 0;
+    
+    const runStep = () => {
+      nodes.forEach(n => document.getElementById(n).classList.remove("visible"));
+      currentIdx = 0;
+      
+      const loop = setInterval(() => {
+        if (currentIdx < nodes.length) {
+          document.getElementById(nodes[currentIdx]).classList.add("visible");
+          currentIdx++;
+        } else {
+          clearInterval(loop);
+        }
+      }, 1200);
+    };
+
+    document.getElementById("btn-react-step").addEventListener("click", runStep);
+    runStep();
+  }
+}
+
+</script>
+  <script>
+// Main Application Logic for Lumina Tutor
+
+// Global state variables
+let currentDay = 1;
+let voices = [];
+let speechSynth = window.speechSynthesis;
+let recognition = null;
+let isRecording = false;
+let speakResponses = true;
+let completedDays = JSON.parse(localStorage.getItem("lumina_completed") || "[]");
+
+// Instantiate visualizer
+let visualizer = null;
+
+// Initialize app when DOM loaded
+document.addEventListener("DOMContentLoaded", () => {
+  visualizer = new LuminaVisualizer("visualizer-canvas");
+  
+  loadSavedKeys(); // Load API keys from local storage securely
+  initRoadmap();
+  initVoices();
+  initSpeechRecognition();
+  loadDay(currentDay);
+  setupEventListeners();
+  updateProgress();
+
+  // Initialize D-ID fallback avatar picture
+  const didImageInput = document.getElementById("did-image-input");
+  const fallbackImg = document.getElementById("avatar-fallback-img");
+  if (didImageInput && fallbackImg) {
+    fallbackImg.style.backgroundImage = `url('${didImageInput.value}')`;
+    didImageInput.addEventListener("change", () => {
+      fallbackImg.style.backgroundImage = `url('${didImageInput.value}')`;
+    });
+  }
+
+  // Register PWA Service Worker for offline mobile support
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then((reg) => console.log("Lumina Service Worker registered successfully:", reg.scope))
+      .catch((err) => console.error("Service Worker registration failed:", err));
+  }
+});
+
+// Load API keys from local storage securely
+function loadSavedKeys() {
+  const apiKeyInput = document.getElementById("api-key-input");
+  const didKeyInput = document.getElementById("did-key-input");
+  const didImageInput = document.getElementById("did-image-input");
+
+  if (apiKeyInput) {
+    apiKeyInput.value = localStorage.getItem("lumina_api_key") || "";
+    apiKeyInput.addEventListener("input", (e) => {
+      localStorage.setItem("lumina_api_key", e.target.value.trim());
+    });
+  }
+  if (didKeyInput) {
+    didKeyInput.value = localStorage.getItem("lumina_did_key") || "";
+    didKeyInput.addEventListener("input", (e) => {
+      localStorage.setItem("lumina_did_key", e.target.value.trim());
+    });
+  }
+  if (didImageInput) {
+    didImageInput.value = localStorage.getItem("lumina_did_image") || didImageInput.value;
+    didImageInput.addEventListener("input", (e) => {
+      localStorage.setItem("lumina_did_image", e.target.value.trim());
+    });
+  }
+}
+
+// Setup sidebar roadmap navigation
+function initRoadmap() {
+  const listEl = document.getElementById("roadmap-list");
+  listEl.innerHTML = "";
+
+  for (let d = 1; d <= 30; d++) {
+    const item = curriculumData[d];
+    if (!item) continue;
+
+    const node = document.createElement("div");
+    node.className = `day-node ${d === currentDay ? 'active' : ''}`;
+    node.id = `day-node-${d}`;
+    node.dataset.day = d;
+    
+    // Add checkmark if complete
+    const isCompleted = completedDays.includes(d);
+    const badgeText = isCompleted ? "✓" : d;
+    
+    node.innerHTML = `
+      <div class="day-badge">${badgeText}</div>
+      <div class="day-info">
+        <span class="day-title">${item.title}</span>
+        <span class="day-cat">${item.category}</span>
+      </div>
+    `;
+
+    node.addEventListener("click", () => {
+      // Set active styles
+      document.querySelectorAll(".day-node").forEach(el => el.classList.remove("active"));
+      node.classList.add("active");
+      
+      // Load selected day
+      loadDay(d);
+    });
+
+    listEl.appendChild(node);
+  }
+}
+
+// Render selected day data
+function loadDay(day) {
+  currentDay = day;
+  const item = curriculumData[day];
+  if (!item) return;
+
+  // Update Category Badge
+  document.getElementById("topic-category-badge").innerText = item.category;
+
+  // Convert markdown-like concept to HTML
+  const conceptEl = document.getElementById("concept-content");
+  conceptEl.innerHTML = parseMarkdown(item.concept);
+
+  // Set Code Snippet
+  const codeEl = document.getElementById("code-snippet-box");
+  codeEl.innerText = item.code;
+
+  // Launch visualizer module
+  visualizer.setMode(item.visualizerMode);
+
+  // Stop any active speaking
+  if (speechSynth) speechSynth.cancel();
+}
+
+// Clean and simple markdown parser
+function parseMarkdown(md) {
+  if (!md) return "";
+  let html = md;
+  
+  // Headers
+  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+  
+  // Bold
+  html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+  
+  // Inline Code
+  html = html.replace(/`(.*?)`/gim, '<code>$1</code>');
+  
+  // Lists
+  html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+  // Wrap list items
+  html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
+  // Clean double lists
+  html = html.replace(/<\/ul>\s*<ul>/gim, '');
+  
+  // Newlines to Paragraphs
+  html = html.split(/\n\n+/).map(p => {
+    if (p.trim().startsWith('<h') || p.trim().startsWith('<ul') || p.trim().startsWith('<ol')) {
+      return p;
+    }
+    return `<p>${p.trim().replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+
+  return html;
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+  // TTS Button
+  document.getElementById("btn-play-topic").addEventListener("click", () => {
+    const item = curriculumData[currentDay];
+    if (item && item.audioText) {
+      speakText(item.audioText);
+    }
+  });
+
+  // Copy Code Button
+  document.getElementById("btn-copy-code").addEventListener("click", () => {
+    const code = document.getElementById("code-snippet-box").innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      const copyBtn = document.getElementById("btn-copy-code");
+      copyBtn.innerText = "Copied!";
+      setTimeout(() => copyBtn.innerText = "Copy", 1500);
+    });
+  });
+
+  // Toggle Speak Responses
+  const replyToggle = document.getElementById("btn-audio-reply-toggle");
+  replyToggle.addEventListener("click", () => {
+    speakResponses = !speakResponses;
+    replyToggle.classList.toggle("active", speakResponses);
+  });
+
+  // Send Message Button
+  document.getElementById("btn-send-message").addEventListener("click", sendMessage);
+  document.getElementById("chat-input-text").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  // Mic Button
+  document.getElementById("btn-mic-toggle").addEventListener("click", toggleVoiceRecording);
+}
+
+// Populate system voices
+function initVoices() {
+  if (!speechSynth) return;
+  
+  const populate = () => {
+    voices = speechSynth.getVoices();
+    const select = document.getElementById("voice-select");
+    select.innerHTML = "";
+
+    voices.forEach((v, idx) => {
+      // Pick English and Hindi voices
+      if (v.lang.startsWith("en") || v.lang.startsWith("hi")) {
+        const option = document.createElement("option");
+        option.value = idx;
+        option.innerText = `${v.name} (${v.lang})`;
+        select.appendChild(option);
+      }
+    });
+  };
+
+  populate();
+  if (speechSynth.onvoiceschanged !== undefined) {
+    speechSynth.onvoiceschanged = populate;
+  }
+}
+
+// Simple English-to-Hindi mapping for the daily audio lectures
+const hindiDailyLectures = {
+  1: "डे 1 में आपका स्वागत है। आज हम टोकन्स के बारे में सीख रहे हैं। टोकन भाषा मॉडल का बुनियादी घटक है। चूंकि कंप्यूटर केवल नंबरों को समझते हैं, इसलिए हमें वाक्यों को छोटे टुकड़ों में काटना पड़ता है जिन्हें टोकन कहा जाता है।",
+  2: "डे 2. आज हम कवर कर रहे हैं कि टोकन कैसे संग्रहीत और संसाधित होते हैं। बाइट-पेयर एनकोडिंग जैसे टोकनाइज़ेशन एल्गोरिदम सामान्य उप-शब्दों की एक शब्दावली बनाते हैं जो स्ट्रिंग्स को नंबरों से मैप करते हैं।",
+  3: "डे 3. हम एम्बेडिंग के बारे में चर्चा कर रहे हैं। एम्बेडिंग शब्दों के अर्थ को एक विशाल बहु-आयामी कमरे में निर्देशांक (कॉर्डिनेट्स) के रूप में दर्शाती है। बिल्ली और कुत्ते जैसे समान शब्द पास-पास होते हैं।",
+  4: "डे 4. वर्ड टू वेक जैसे स्टेटिक एम्बेडिंग शब्दों को अकेले दर्शाते हैं, जबकि आधुनिक ट्रांसफॉर्मर एम्बेडिंग संदर्भ के आधार पर अपने मूल्यों को बदलते हैं।",
+  5: "डे 5. ट्रांसफॉर्मर ने समानांतर पठन (पैरेलल रीडिंग) शुरू करके एआई में क्रांति ला दी। एक-एक करके पढ़ने के बजाय, ट्रांसफॉर्मर एक ही बार में पूरे पैराग्राफ को देखता है।",
+  6: "डे 6. सेल्फ-अटेंशन गणितीय भार की गणना करता है जो दर्शाता है कि वाक्य में शब्द एक-दूसरे से कैसे संबंधित हैं। उदाहरण के लिए, यह समझने में मदद करता है कि 'वह' शब्द बिल्ली से जुड़ा है या सड़क से।",
+  7: "डे 7. ट्रेनिंग के तीन चरण हैं: प्री-ट्रेनिंग वेब टेक्स्ट पर शब्द की भविष्यवाणी सिखाती है। सुपरवाइज्ड फाइन-ट्यूनिंग निर्देशों का पालन करना सिखाती है। और संरेखण (अलाइनमेंट) मॉडल को सुरक्षित बनाता है।",
+  8: "डे 8. वेक्टर डेटाबेस एलएलएम के लिए दीर्घकालिक स्मृति (लॉन्ग-टर्म मेमोरी) के रूप में कार्य करते हैं। साधारण रिलेशनल डेटाबेस फ्लोट्स की सूची में तेजी से खोज नहीं कर सकते हैं।",
+  9: "डे 9. एक वेक्टर रिकॉर्ड में फ्लोट ऐरे एम्बेडिंग, एक विशिष्ट आईडी, फ़ाइल नाम जैसे मेटाडेटा और मूल पाठ खंड शामिल होते हैं।",
+  10: "डे 10. लाखों वेक्टर्स को तुरंत खोजने के लिए, हम इंडेक्स बनाते हैं। एचएनएसडब्ल्यू तेजी से सही जगह पर जाने के लिए एक ग्राफ बनाता है, जबकि आईवीएफ वेक्टर्स को समूहों में बांटता है।",
+  11: "डे 11. वेक्टर समानता की गणना दूरी सूत्रों का उपयोग करके की जाती है। कोसाइन सिमिलैरिटी वेक्टर्स के बीच के कोण को मापती है, जबकि यूक्लिडियन दूरी उनके बीच की दूरी को मापती है।",
+  12: "डे 12. रिट्रीवल ऑगमेंटेड जनरेशन (रैग) आपके प्रश्न को वेक्टर में बदलकर, वेक्टर डेटाबेस को क्वेरी करके और संदर्भ के रूप में सबसे समान पाठ खंडों को लाकर शुरू होता है।",
+  13: "डे 13. जनरेशन रिट्रीव की गई जानकारी को लेता है, उन्हें एक सिस्टम प्रॉम्प्ट में पेस्ट करता है, और सटीक उत्तर देने के लिए इसे एलएलएम को फीड करता है।",
+  14: "डे 14. एडवांस्ड रैग क्वेरी री-राइटिंग, हाइब्रिड सर्च और क्रॉस-एनकोडर री-रैंकिंग का उपयोग करके खोज को बेहतर बनाता है ताकि सबसे अच्छा संदर्भ सबसे ऊपर आ सके।",
+  15: "डे 15. हम एजेंटिक एआई शुरू कर रहे हैं। एजेंट सोचने, टूल के साथ काम करने और परिणामों को देखने के लिए लूप का उपयोग करते हैं।"
+};
+
+// Speak text using Web Speech API
+function speakText(text) {
+  if (!speechSynth) return;
+  
+  // Stop speaking current text first
+  speechSynth.cancel();
+
+  // If a Hindi voice is selected and we are playing a daily audio lecture, use the Hindi translation
+  const select = document.getElementById("voice-select");
+  let selectedVoice = null;
+  let speakLang = "en-US";
+
+  if (select.value !== "") {
+    selectedVoice = voices[parseInt(select.value)];
+    speakLang = selectedVoice.lang;
+  }
+
+  let textToSpeak = text;
+  if (speakLang.startsWith("hi") && hindiDailyLectures[currentDay] && text === curriculumData[currentDay].audioText) {
+    textToSpeak = hindiDailyLectures[currentDay];
+  }
+
+  // Intercept with D-ID API if key is present
+  const didKey = document.getElementById("did-key-input").value.trim();
+  const didImageUrl = document.getElementById("did-image-input").value.trim();
+  if (didKey) {
+    generateDIDAvatar(textToSpeak, didKey, didImageUrl, speakLang);
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance(textToSpeak);
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+
+  speechSynth.speak(utterance);
+}
+
+// Generate D-ID Avatar video talking frames and play inside video pane
+async function generateDIDAvatar(text, apiKey, imageUrl, lang) {
+  const loader = document.getElementById("avatar-loader");
+  const video = document.getElementById("avatar-video");
+  
+  if (loader) loader.style.display = "flex";
+  if (video) video.style.display = "none";
+  
+  // Clean text from basic Markdown elements for spoken reading
+  const cleanText = text.replace(/[*#`_\-]/g, "");
+
+  // Determine Microsoft voice ID for D-ID
+  let voiceId = "en-US-JennyNeural";
+  if (lang.startsWith("hi")) {
+    voiceId = "hi-IN-MadhurNeural"; // Standard Hindi speaker
+  }
+
+  try {
+    // Encode API key to Base64 username parameter
+    const base64Key = btoa(`${apiKey}:`);
+    
+    // Step 1: Create Talk request
+    const response = await fetch("https://api.d-id.com/talks", {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${base64Key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        source_url: imageUrl,
+        script: {
+          type: "text",
+          input: cleanText,
+          provider: {
+            type: "microsoft",
+            voice_id: voiceId
+          }
+        },
+        config: {
+          fluent: "false",
+          pad_audio: "0.0"
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`D-ID talk request returned code ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    const talkId = data.id;
+    console.log("Started D-ID Talk generation. ID:", talkId);
+    
+    // Step 2: Poll status
+    const pollInterval = setInterval(async () => {
+      try {
+        const pollResponse = await fetch(`https://api.d-id.com/talks/${talkId}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Basic ${base64Key}`
+          }
+        });
+        
+        const pollData = await pollResponse.json();
+        console.log("D-ID Talk status:", pollData.status);
+        
+        if (pollData.status === "done") {
+          clearInterval(pollInterval);
+          
+          if (loader) loader.style.display = "none";
+          if (video) {
+            video.style.display = "block";
+            video.src = pollData.result_url;
+            video.play();
+            
+            // Revert back when speaking video finishes
+            video.onended = () => {
+              video.style.display = "none";
+            };
+          }
+        } else if (pollData.status === "error") {
+          clearInterval(pollInterval);
+          if (loader) loader.style.display = "none";
+          alert("D-ID Avatar generation error. Verify D-ID credits or try another face image URL.");
+        }
+      } catch (err) {
+        clearInterval(pollInterval);
+        if (loader) loader.style.display = "none";
+        console.error("D-ID Polling error:", err);
+      }
+    }, 1500);
+
+  } catch (error) {
+    if (loader) loader.style.display = "none";
+    console.error("D-ID Integration error:", error);
+    alert("D-ID Integration error. Falling back to local Speech Synthesis.");
+    
+    // Local fallback audio read
+    if (speechSynth) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynth.speak(utterance);
+    }
+  }
+}
+
+// Setup Speech Recognition (STT)
+function initSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    console.log("Web Speech Recognition API not supported in this browser.");
+    document.getElementById("btn-mic-toggle").style.display = "none";
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    const micBtn = document.getElementById("btn-mic-toggle");
+    micBtn.classList.add("recording");
+    micBtn.innerText = "🛑";
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    const micBtn = document.getElementById("btn-mic-toggle");
+    micBtn.classList.remove("recording");
+    micBtn.innerText = "🎙️";
+  };
+
+  recognition.onresult = (event) => {
+    const resultText = event.results[0][0].transcript;
+    document.getElementById("chat-input-text").value = resultText;
+    sendMessage(); // Send automatically once speech transcribed
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech Recognition Error:", event.error);
+    isRecording = false;
+    const micBtn = document.getElementById("btn-mic-toggle");
+    micBtn.classList.remove("recording");
+    micBtn.innerText = "🎙️";
+  };
+
+  // Adjust STT language dynamically when voice selection changes
+  document.getElementById("voice-select").addEventListener("change", (e) => {
+    if (e.target.value !== "") {
+      const selectedVoice = voices[parseInt(e.target.value)];
+      recognition.lang = selectedVoice.lang;
+      console.log("Speech recognition language switched to:", recognition.lang);
+    }
+  });
+}
+
+// Toggle Mic recording status
+function toggleVoiceRecording() {
+  if (!recognition) return;
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    recognition.start();
+  }
+}
+
+// Send Chatbot message
+async function sendMessage() {
+  const inputEl = document.getElementById("chat-input-text");
+  const query = inputEl.value.trim();
+  if (!query) return;
+
+  // Render User Message
+  appendMessage(query, "user");
+  inputEl.value = "";
+
+  // Show "Thinking" animation indicator
+  const historyEl = document.getElementById("chat-messages");
+  const thinkingDiv = document.createElement("div");
+  thinkingDiv.className = "msg tutor thinking";
+  thinkingDiv.innerText = "Lumina is analyzing...";
+  historyEl.appendChild(thinkingDiv);
+  historyEl.scrollTop = historyEl.scrollHeight;
+
+  try {
+    const responseText = await getTutorResponse(query);
+    
+    // Remove thinking message
+    thinkingDiv.remove();
+    
+    // Render tutor response
+    appendMessage(responseText, "tutor");
+    
+    // Mark active day as complete when talking to tutor about it
+    markDayComplete(currentDay);
+
+    // Speak response if toggled active
+    if (speakResponses) {
+      speakText(responseText);
+    }
+  } catch (err) {
+    thinkingDiv.remove();
+    appendMessage("Error generating answer. Please try again.", "tutor");
+    console.error(err);
+  }
+}
+
+// Append bubble to history
+function appendMessage(text, sender) {
+  const historyEl = document.getElementById("chat-messages");
+  const div = document.createElement("div");
+  div.className = `msg ${sender}`;
+  div.innerText = text;
+  
+  historyEl.appendChild(div);
+  historyEl.scrollTop = historyEl.scrollHeight;
+}
+
+// Get AI Tutor Answer (Mock logic with local data or Live API call if Key exists)
+async function getTutorResponse(query) {
+  const apiKey = document.getElementById("api-key-input").value.trim();
+  const lowerQuery = query.toLowerCase();
+
+  // If user supplied API key, let's call actual Gemini model
+  if (apiKey) {
+    try {
+      // Build context prompt injecting details of the current learning topic
+      const activeTopic = curriculumData[currentDay];
+      const prompt = `You are Lumina, a friendly, professional AI Tutor teaching LLMs and Agentic AI.
+Current user study topic: Day ${currentDay} - ${activeTopic.title}
+Concept summary: ${activeTopic.concept}
+
+User Question: "${query}"
+
+Guidelines:
+1. Explain simply in plain, clear English.
+2. If applicable, provide a short snippet.
+3. Keep it brief (under 150 words).`;
+
+      // Identify model type by key prefix
+      if (apiKey.startsWith("AIza")) {
+        // Gemini API
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 250 }
+          })
+        });
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+      } else {
+        // Default to OpenAI structure if other key format
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 250
+          })
+        });
+        const data = await response.json();
+        return data.choices[0].message.content;
+      }
+    } catch (e) {
+      console.warn("API direct call failed, falling back to local database routing.", e);
+    }
+  }
+
+  // Local/Mock Database matching
+  await new Promise(resolve => setTimeout(resolve, 800)); // Simulate minor delay
+
+  if (lowerQuery.includes("token")) {
+    return tutorResponses["tokens"] + ` Let me know if you would like me to explain character vs subword splits!`;
+  } else if (lowerQuery.includes("transformer") || lowerQuery.includes("attention")) {
+    return tutorResponses["transformers"] + ` Watch the interactive grid block in the center playground to see weight maps.`;
+  } else if (lowerQuery.includes("embedding")) {
+    return tutorResponses["embeddings"] + ` In the visualizer panel, you can run the Vector space mathematical calculation to see how vectors work.`;
+  } else if (lowerQuery.includes("vector")) {
+    return tutorResponses["vector db"] + ` It creates layered index graphs like HNSW, preventing slow full-table linear scans.`;
+  }
+
+  // Conversational response routing based on current day
+  const topic = curriculumData[currentDay];
+  return `Great question! Regarding "${topic.title}": We learn that ${topic.audioText}. Try clicking 'Run Simulation' or looking at the Python code segment in the playground to visualize this process!`;
+}
+
+// Mark day as complete
+function markDayComplete(day) {
+  if (!completedDays.includes(day)) {
+    completedDays.push(day);
+    localStorage.setItem("lumina_completed", JSON.stringify(completedDays));
+    
+    // Update badge in sidebar
+    const badge = document.querySelector(`#day-node-${day} .day-badge`);
+    if (badge) badge.innerText = "✓";
+    
+    updateProgress();
+  }
+}
+
+// Update UI progress indicator
+function updateProgress() {
+  const percent = Math.round((completedDays.length / 30) * 100);
+  document.getElementById("progress-indicator").innerText = `${percent}%`;
+}
+
+</script>
+</body>
+</html>
