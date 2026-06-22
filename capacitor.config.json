@@ -1,6 +1,6 @@
 {
   "appId": "com.luminatutor.app",
   "appName": "Lumina Tutor",
-  "webDir": ".",
+  "webDir": "www",
   "bundledWebRuntime": false
 }

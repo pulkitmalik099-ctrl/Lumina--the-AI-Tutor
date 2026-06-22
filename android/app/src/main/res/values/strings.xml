@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lumina Tutor</string>
+    <string name="title_activity_main">Lumina Tutor</string>
+    <string name="package_name">com.luminatutor.app</string>
+    <string name="custom_url_scheme">com.luminatutor.app</string>
+</resources>

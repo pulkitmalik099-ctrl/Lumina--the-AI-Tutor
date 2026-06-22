@@ -1,0 +1,30 @@
+{
+  "name": "lumina-tutor",
+  "version": "1.0.0",
+  "description": "Lumina is a premium, voice-enabled web application and AI study tutor designed to help you master **Large Language Models (LLMs)** and **Agentic AI** in 30 days. It simplifies complex mathematical and algorithmic concepts into plain English using interactive animations, code snippets, and audio-visual explanations.",
+  "main": "app.js",
+  "scripts": {
+    "build": "powershell -Command \"Copy-Item index.html, style.css, app.js, curriculum.js, visualizer.js, manifest.json, sw.js -Destination www -Force\"",
+    "sync": "npm run build && npx cap sync",
+    "open:android": "npx cap open android"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pulkitmalik099-ctrl/Lumina--the-AI-Tutor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/pulkitmalik099-ctrl/Lumina--the-AI-Tutor/issues"
+  },
+  "homepage": "https://github.com/pulkitmalik099-ctrl/Lumina--the-AI-Tutor#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.4.1"
+  }
+}
