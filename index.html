@@ -12,6 +12,7 @@
 </head>
 <body>
 
+  <div class="overlay-backdrop" id="overlay-backdrop"></div>
   <div class="app-container">
     
     <!-- Sidebar: 30-Day Syllabus Roadmap -->
@@ -22,25 +23,42 @@
       </div>
       <div class="roadmap-header">
         <span>30-Day Syllabus</span>
-        <span id="progress-indicator" style="color: var(--cyan); font-weight: bold;">0%</span>
+        <span id="progress-indicator" class="progress-indicator">0%</span>
       </div>
       <div class="roadmap-scroll" id="roadmap-list">
         <!-- Day items injected by app.js -->
       </div>
       
+      <!-- Mark complete + reset -->
+      <div class="progress-actions">
+        <button class="btn-mark-complete" id="btn-mark-complete">✓ Mark Day Complete</button>
+        <button class="btn-reset-progress" id="btn-reset-progress" aria-label="Reset all progress">Reset</button>
+      </div>
+
       <!-- API Settings Widget -->
       <div class="api-settings-panel">
         <h5>Optional API Settings</h5>
-        <input type="password" id="api-key-input" class="api-key-input" placeholder="Enter Gemini or OpenAI API Key..." style="margin-bottom: 8px;" />
-        
+        <label for="api-key-input" class="sr-only">Gemini or OpenAI API Key</label>
+        <input type="password" id="api-key-input" class="api-key-input settings-input-spaced" placeholder="Enter Gemini or OpenAI API Key..." />
+
         <h5>D-ID API Avatar Settings</h5>
-        <input type="password" id="did-key-input" class="api-key-input" placeholder="Enter D-ID API Key..." style="margin-bottom: 8px;" />
+        <label for="did-key-input" class="sr-only">D-ID API Key</label>
+        <input type="password" id="did-key-input" class="api-key-input settings-input-spaced" placeholder="Enter D-ID API Key..." />
+        <label for="did-image-input" class="sr-only">Face Image URL for D-ID</label>
         <input type="url" id="did-image-input" class="api-key-input" placeholder="Face Image URL (for D-ID)..." value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&h=256&fit=crop" />
       </div>
     </aside>
 
     <!-- Center Pane: Workspace (Concept & Visualizer/Code) -->
     <main class="workspace">
+      <!-- Top bar: day navigation + focus toggle -->
+      <div class="workspace-topbar">
+        <button class="topbar-btn" id="btn-prev-day" aria-label="Previous day">‹</button>
+        <span class="topbar-day-label" id="topbar-day-label">Day 1</span>
+        <button class="topbar-btn" id="btn-next-day" aria-label="Next day">›</button>
+        <div class="topbar-spacer"></div>
+        <button class="topbar-btn focus-toggle-btn" id="btn-focus-mode" aria-label="Toggle focus mode" title="Focus mode">⛶</button>
+      </div>
       
       <!-- Top Half: Daily Concept Explanation -->
       <section class="workspace-pane">
@@ -48,7 +66,7 @@
           <div class="pane-title">
             <span>📖</span> Topic Explanation
           </div>
-          <div id="topic-category-badge" style="font-size: 11px; text-transform: uppercase; border: 1px solid var(--pink); color: var(--pink); padding: 2px 8px; border-radius: 12px;">
+          <div id="topic-category-badge" class="topic-category-badge">
             LLM Foundations
           </div>
         </div>
@@ -56,31 +74,51 @@
           <!-- Concept text markdown injected by app.js -->
         </div>
         <div class="audio-action-row">
-          <button class="btn-audio-listen" id="btn-play-topic">
-            <span>🔊</span> Listen to Explanation
+          <button class="btn-audio-listen" id="btn-play-topic" aria-label="Listen to explanation">
+            <span aria-hidden="true">🔊</span> Listen to Explanation
           </button>
+          <button class="btn-audio-pause" id="btn-pause-tts" aria-label="Pause speech" hidden>⏸ Pause</button>
+          <button class="btn-audio-pause" id="btn-resume-tts" aria-label="Resume speech" hidden>▶ Resume</button>
+          <select class="tts-speed-select" id="tts-speed-select" aria-label="Playback speed">
+            <option value="1">1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+          </select>
         </div>
       </section>
 
-      <!-- Bottom Half: Dynamic Visualizer & Code playground -->
-      <section class="workspace-pane" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <!-- Left: Interactive Visualizer -->
-        <div style="display: flex; flex-direction: column; overflow: hidden;">
-          <div class="pane-header">
-            <div class="pane-title"><span>⚡</span> Interactive Playground</div>
-          </div>
-          <div class="scroll-content" id="visualizer-canvas" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 16px; border: 1px solid var(--border-color);">
+      <!-- Quiz panel (hidden when no quiz data) -->
+      <section class="quiz-panel" id="quiz-panel" aria-label="Check understanding" hidden>
+        <div class="quiz-header">
+          <span class="quiz-title">Check Understanding</span>
+          <span class="quiz-score" id="quiz-score"></span>
+        </div>
+        <div class="quiz-question" id="quiz-question"></div>
+        <div class="quiz-options" id="quiz-options" role="list"></div>
+        <div class="quiz-feedback" id="quiz-feedback" aria-live="polite"></div>
+        <div class="quiz-nav">
+          <button class="quiz-next-btn" id="quiz-next-btn" hidden>Next Question →</button>
+        </div>
+      </section>
+
+      <!-- Bottom Half: Tabbed Visualizer / Code -->
+      <section class="workspace-pane workspace-tab-section" id="workspace-bottom">
+        <div class="tab-bar" role="tablist">
+          <button class="tab-btn active" id="tab-playground" role="tab" aria-selected="true" aria-controls="playground-tab-pane">⚡ Playground</button>
+          <button class="tab-btn" id="tab-code" role="tab" aria-selected="false" aria-controls="code-tab-pane">💻 Code</button>
+        </div>
+
+        <!-- Playground pane -->
+        <div class="tab-pane active" id="playground-tab-pane" role="tabpanel">
+          <div class="scroll-content visualizer-canvas-wrap" id="visualizer-canvas">
             <!-- Visualizer module renders here -->
           </div>
         </div>
-        
-        <!-- Right: Code snippet -->
-        <div style="display: flex; flex-direction: column; overflow: hidden;">
-          <div class="pane-header">
-            <div class="pane-title"><span>💻</span> Implementation Code</div>
-          </div>
-          <div class="code-container" style="flex: 1;">
-            <button class="copy-btn" id="btn-copy-code">Copy</button>
+
+        <!-- Code pane -->
+        <div class="tab-pane" id="code-tab-pane" role="tabpanel">
+          <div class="code-container code-container-wrap">
+            <button class="copy-btn" id="btn-copy-code" aria-label="Copy code">Copy</button>
             <pre><code id="code-snippet-box"></code></pre>
           </div>
         </div>
@@ -95,7 +133,7 @@
           <div class="avatar">🤖</div>
           <div class="tutor-name">
             <h3>Lumina AI Tutor</h3>
-            <div class="status-dot">Online & Listening</div>
+            <div class="status-dot" id="tutor-status">Idle</div>
           </div>
         </div>
       </div>
@@ -110,6 +148,9 @@
         <div class="avatar-fallback-img" id="avatar-fallback-img"></div>
       </div>
       
+      <!-- Day-scoped suggested questions -->
+      <div class="suggestion-chips" id="suggestion-chips" aria-label="Suggested questions"></div>
+
       <!-- Chat history bubbles -->
       <div class="chat-history" id="chat-messages">
         <div class="msg tutor">
@@ -121,10 +162,10 @@
 
       <!-- Voice Preferences panel -->
       <div class="audio-controls">
-        <button class="voice-toggle-btn active" id="btn-audio-reply-toggle">
-          <span>🔊</span> Speak Responses
+        <button class="voice-toggle-btn active" id="btn-audio-reply-toggle" aria-label="Toggle spoken responses" aria-pressed="true">
+          <span aria-hidden="true">🔊</span> Speak Responses
         </button>
-        <select id="voice-select" class="premium-select" style="background:rgba(0,0,0,0.5); border:1px solid var(--border-color); color:#fff; font-size:11px; padding:4px 8px; border-radius:12px; max-width: 140px;">
+        <select id="voice-select" class="premium-select voice-select-styled" aria-label="Select voice">
           <!-- Voice options populated by JS -->
         </select>
       </div>
@@ -132,12 +173,31 @@
       <!-- Chat input fields -->
       <div class="chat-input-wrapper">
         <input type="text" class="chat-input" id="chat-input-text" placeholder="Ask Lumina a question..." />
-        <button class="voice-record-btn" id="btn-mic-toggle" title="Talk to Tutor">🎙️</button>
-        <button class="send-btn" id="btn-send-message">➔</button>
+        <button class="voice-record-btn" id="btn-mic-toggle" title="Talk to Tutor" aria-label="Toggle microphone">
+          🎙️
+          <span class="mic-recording-indicator" id="mic-indicator" aria-hidden="true" hidden></span>
+        </button>
+        <button class="send-btn" id="btn-send-message" aria-label="Send message">➔</button>
       </div>
     </aside>
 
   </div>
+
+  <!-- Mobile bottom tab bar (shown only < 640px) -->
+  <nav class="mobile-tab-bar" id="mobile-tab-bar" aria-label="Mobile navigation">
+    <button class="mobile-tab-btn" data-tab="lessons" aria-label="Lessons">
+      <span class="mobile-tab-icon">📚</span>
+      <span class="mobile-tab-label">Lessons</span>
+    </button>
+    <button class="mobile-tab-btn active" data-tab="learn" aria-label="Learn">
+      <span class="mobile-tab-icon">📖</span>
+      <span class="mobile-tab-label">Learn</span>
+    </button>
+    <button class="mobile-tab-btn" data-tab="tutor" aria-label="Tutor">
+      <span class="mobile-tab-icon">🤖</span>
+      <span class="mobile-tab-label">Tutor</span>
+    </button>
+  </nav>
 
   <!-- Include Scripts -->
   <script src="curriculum.js"></script>

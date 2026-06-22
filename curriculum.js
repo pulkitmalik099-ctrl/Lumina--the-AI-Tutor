@@ -33,7 +33,27 @@ print("Token IDs:", tokens)
 for token_id in tokens:
     print(f"ID: {token_id} -> Text: '{enc.decode([token_id])}'")`,
     visualizerMode: "tokenizer",
-    audioText: "Welcome to Day 1. Today we are learning about tokens. A token is the fundamental building block of language models. Since computers only understand numbers, we must slice sentences into smaller pieces called tokens, which are then mapped to numbers. Think of them as syllables or subwords that the model reads."
+    audioText: "Welcome to Day 1. Today we are learning about tokens. A token is the fundamental building block of language models. Since computers only understand numbers, we must slice sentences into smaller pieces called tokens, which are then mapped to numbers. Think of them as syllables or subwords that the model reads.",
+    quiz: [
+      {
+        q: "What is the primary purpose of tokenization in LLMs?",
+        options: ["Convert text into numbers a model can process", "Compress audio files", "Generate images from text", "Sort words alphabetically"],
+        answerIndex: 0,
+        explain: "Computers only understand numbers. Tokenization maps text pieces (tokens) to integer IDs so the model can process them mathematically."
+      },
+      {
+        q: "Which tokenization strategy do modern LLMs like GPT use?",
+        options: ["Character-level", "Word-level", "Subword tokenization", "Sentence-level"],
+        answerIndex: 2,
+        explain: "Subword tokenization balances vocabulary size and coverage — common words stay whole, rare words are split into sub-parts, avoiding the out-of-vocabulary problem."
+      },
+      {
+        q: "What problem does whole-word tokenization create?",
+        options: ["Tokens are too short", "Misspelled words become unrecognized (OOV problem)", "The model generates too many tokens", "Audio quality drops"],
+        answerIndex: 1,
+        explain: "A vocabulary of millions of whole words means any misspelling or rare word has no entry — the Out-of-Vocabulary (OOV) problem. Subword tokenization solves this."
+      }
+    ]
   },
   2: {
     title: "How Tokens Work & Are Stored",
@@ -62,7 +82,27 @@ def tokenize(text):
         return [6] # Token ID for hello
     return [vocab[c] for c in text] # Character fallback`,
     visualizerMode: "bpe-merger",
-    audioText: "Day 2. Today we cover how tokens are stored and processed. Tokenization algorithms like Byte-Pair Encoding build a vocabulary of common subwords. This vocabulary is a simple lookup dictionary that maps string patterns to numbers. When the LLM runs, it converts incoming text into list of numbers using this dictionary."
+    audioText: "Day 2. Today we cover how tokens are stored and processed. Tokenization algorithms like Byte-Pair Encoding build a vocabulary of common subwords. This vocabulary is a simple lookup dictionary that maps string patterns to numbers. When the LLM runs, it converts incoming text into list of numbers using this dictionary.",
+    quiz: [
+      {
+        q: "Which tokenization algorithm does GPT use?",
+        options: ["WordPiece", "SentencePiece", "Byte-Pair Encoding (BPE)", "Unigram"],
+        answerIndex: 2,
+        explain: "GPT models use BPE — it starts with characters and iteratively merges the most frequent pairs to build a vocabulary of common subwords."
+      },
+      {
+        q: "What does a vocabulary file contain?",
+        options: ["A mapping of tokens to integer IDs", "Raw audio bytes", "Compressed image data", "Training loss values"],
+        answerIndex: 0,
+        explain: "The vocabulary file is a lookup table: each unique token string maps to a unique integer ID. GPT-4's vocabulary has ~100k entries."
+      },
+      {
+        q: "Approximately how large is GPT-4's token vocabulary?",
+        options: ["1,000 tokens", "10,000 tokens", "100,000 tokens", "1,000,000 tokens"],
+        answerIndex: 2,
+        explain: "GPT-4 uses the cl100k_base tokenizer with roughly 100,000 tokens — a balance between coverage and embedding table size."
+      }
+    ]
   },
   3: {
     title: "Embeddings – What are they?",
@@ -93,7 +133,27 @@ embedding = result['embedding']
 print("Embedding Vector Length:", len(embedding))
 print("First 5 coordinates:", embedding[:5])`,
     visualizerMode: "embeddings-space",
-    audioText: "Day 3. We are discussing embeddings. An embedding represents word meaning as coordinates in a massive multi-dimensional room. Words with similar concepts, like cat and dog, are stored close together, allowing computers to compute semantic relations mathematically."
+    audioText: "Day 3. We are discussing embeddings. An embedding represents word meaning as coordinates in a massive multi-dimensional room. Words with similar concepts, like cat and dog, are stored close together, allowing computers to compute semantic relations mathematically.",
+    quiz: [
+      {
+        q: "What is an embedding in the context of LLMs?",
+        options: ["A compressed audio file", "A vector representing the semantic meaning of a token", "A list of vocabulary words", "A type of neural network layer"],
+        answerIndex: 1,
+        explain: "An embedding is a dense vector (list of decimal numbers) that positions the token in a high-dimensional semantic space — similar words cluster nearby."
+      },
+      {
+        q: "What does the famous equation King - Man + Woman = Queen demonstrate?",
+        options: ["Embeddings can do arithmetic on meaning", "The model can translate languages", "Tokens are stored alphabetically", "Word lengths are correlated"],
+        answerIndex: 0,
+        explain: "In embedding space, direction encodes relationships. Subtracting 'Man' and adding 'Woman' to 'King' lands near 'Queen', proving semantic relationships are geometrically encoded."
+      },
+      {
+        q: "How many dimensions do typical LLM embeddings have?",
+        options: ["3", "16", "768 or 1536", "1,000,000"],
+        answerIndex: 2,
+        explain: "Popular models use 768 (BERT-base) to 1536 (OpenAI text-embedding-ada-002) dimensions — enough to encode rich semantic meaning without excessive compute."
+      }
+    ]
   },
   4: {
     title: "Types of Embeddings",
@@ -121,7 +181,27 @@ vector_1 = get_contextual_vector("The bank of the river")
 vector_2 = get_contextual_vector("The investment bank")
 # vector_1 and vector_2 are distinct based on context!`,
     visualizerMode: "embedding-types",
-    audioText: "Day 4. Static embeddings like Word2Vec represent words in isolation, while modern transformer embeddings change their values based on surrounding context. This means the word bank is represented differently in cash transactions versus riverside walks."
+    audioText: "Day 4. Static embeddings like Word2Vec represent words in isolation, while modern transformer embeddings change their values based on surrounding context. This means the word bank is represented differently in cash transactions versus riverside walks.",
+    quiz: [
+      {
+        q: "What is the key limitation of static embeddings like Word2Vec?",
+        options: ["They require GPUs", "They give one fixed vector per word regardless of context", "They only work in English", "They are too large to store"],
+        answerIndex: 1,
+        explain: "Static embeddings assign the same vector to 'bank' whether it means river bank or investment bank. Contextual embeddings solve this by generating the vector dynamically."
+      },
+      {
+        q: "What type of search do sparse embeddings (TF-IDF, BM25) excel at?",
+        options: ["Semantic similarity search", "Exact keyword matching", "Image retrieval", "Audio search"],
+        answerIndex: 1,
+        explain: "Sparse embeddings have mostly zeros and are great for exact keyword matching. Dense embeddings are better for semantic/conceptual search."
+      },
+      {
+        q: "Which type of embedding does BERT produce?",
+        options: ["Static", "Contextual/Dynamic", "Sparse", "Binary"],
+        answerIndex: 1,
+        explain: "BERT generates contextual embeddings — the vector for each word changes based on surrounding tokens, enabling nuanced understanding of polysemous words."
+      }
+    ]
   },
   5: {
     title: "What is a Transformer?",
@@ -149,7 +229,27 @@ class SimpleTransformerSnippet(nn.Module):
         x = self.embedding(token_ids) 
         return self.transformer_block(x)`,
     visualizerMode: "transformer-overview",
-    audioText: "Day 5. Transformers revolutionized AI by replacing step-by-step reading with parallel reading. Instead of processing word-by-word, a Transformer looks at the entire paragraph at once, dramatically increasing training speeds and context memory."
+    audioText: "Day 5. Transformers revolutionized AI by replacing step-by-step reading with parallel reading. Instead of processing word-by-word, a Transformer looks at the entire paragraph at once, dramatically increasing training speeds and context memory.",
+    quiz: [
+      {
+        q: "What was the major problem with RNNs that Transformers solved?",
+        options: ["RNNs couldn't process text at all", "RNNs processed text sequentially, making long-context training very slow", "RNNs used too little memory", "RNNs couldn't produce embeddings"],
+        answerIndex: 1,
+        explain: "RNNs process text word-by-word in sequence. For a 1000-word text, that's 1000 sequential steps — slow and hard to parallelize. Transformers process all tokens in parallel."
+      },
+      {
+        q: "In which year was the Transformer architecture introduced?",
+        options: ["2012", "2015", "2017", "2020"],
+        answerIndex: 2,
+        explain: "The paper 'Attention Is All You Need' by Google researchers was published in 2017 and introduced the Transformer architecture."
+      },
+      {
+        q: "What key mechanism allows Transformers to link any two words directly?",
+        options: ["Convolution", "Recurrence", "Self-Attention", "Pooling"],
+        answerIndex: 2,
+        explain: "Self-Attention lets every token directly attend to every other token regardless of distance — no sequential steps required."
+      }
+    ]
   },
   6: {
     title: "Transformer Architecture – The Inside Look",
@@ -186,7 +286,27 @@ def self_attention(Q, K, V):
     output = np.dot(weights, V)
     return output, weights`,
     visualizerMode: "attention-matrix",
-    audioText: "Day 6. Self-Attention calculates mathematical weights representing how words in a sentence relate to each other. For example, in the sentence, the animal didn't cross the street because it was too tired, attention helps the model connect the word it to the animal, not to the street."
+    audioText: "Day 6. Self-Attention calculates mathematical weights representing how words in a sentence relate to each other. For example, in the sentence, the animal didn't cross the street because it was too tired, attention helps the model connect the word it to the animal, not to the street.",
+    quiz: [
+      {
+        q: "What three vectors does self-attention compute for each token?",
+        options: ["Query, Key, Value", "Input, Output, Gate", "Mean, Variance, Norm", "Token, Position, Segment"],
+        answerIndex: 0,
+        explain: "Attention scores come from Query·Key dot-products; the resulting weights are applied to Values to produce context-rich representations."
+      },
+      {
+        q: "What is the role of Positional Encoding in a Transformer?",
+        options: ["To compress the embedding vectors", "To tell the model where each token is in the sequence", "To filter out stopwords", "To initialize weights randomly"],
+        answerIndex: 1,
+        explain: "Since all tokens are processed in parallel, the model would otherwise not know word order. Positional encodings (sine/cosine patterns) inject position information."
+      },
+      {
+        q: "Why do Transformers use Multi-Head Attention instead of a single attention head?",
+        options: ["It reduces memory usage", "Multiple heads let the model attend to different relationship types simultaneously", "It speeds up tokenization", "It removes the need for embeddings"],
+        answerIndex: 1,
+        explain: "Multiple heads run attention in parallel, each potentially learning different relationship types — grammar, coreference, factual associations — at the same time."
+      }
+    ]
   },
   7: {
     title: "How Transformers Are Trained",
@@ -217,7 +337,28 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()`,
     visualizerMode: "training-loop",
-    audioText: "Day 7. Training has three phases: Pre-training teaches raw word prediction on web text. Supervised Fine-Tuning teaches instruction-following via dialogues. Alignment, using human feedback, ensures the model behaves safely and helpfully."
+    audioText: "Day 7. Training has three phases: Pre-training teaches raw word prediction on web text. Supervised Fine-Tuning teaches instruction-following via dialogues. Alignment, using human feedback, ensures the model behaves safely and helpfully.",
+    quiz: [
+      {
+        q: "What is the goal of the pre-training phase?",
+        options: ["Answer questions about company policy", "Predict the next token over trillions of web-text tokens", "Generate images from text", "Rank model responses by human preference"],
+        answerIndex: 1,
+        explain: "Pre-training teaches the model general language by predicting the next token across massive web corpora, producing a 'base model' with broad world knowledge."
+      },
+      {
+        q: "What does Supervised Fine-Tuning (SFT) teach the model?",
+        options: ["How to compress tokens", "How to follow instructions via curated prompt-response pairs", "How to index a vector database", "How to draw images"],
+        answerIndex: 1,
+        explain: "SFT trains on human-written dialogues (prompt → ideal response), converting the raw base model into an instruction-following assistant."
+      },
+      {
+        q: "What does RLHF stand for?",
+        options: ["Rapid Learning with High Frequency", "Reinforcement Learning from Human Feedback", "Recursive LLM Hyperparameter Fitting", "Recurrent Layered Hidden Features"],
+        answerIndex: 1,
+        explain: "RLHF (Reinforcement Learning from Human Feedback) ranks model outputs with human preferences and trains a reward model to steer the LLM toward safe, helpful answers."
+      }
+    ]
+    // TODO: Add quiz arrays for Days 8–30 following the same schema
   },
   8: {
     title: "What is a Vector Database?",

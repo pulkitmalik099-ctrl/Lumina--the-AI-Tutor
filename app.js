@@ -7,7 +7,23 @@ let speechSynth = window.speechSynthesis;
 let recognition = null;
 let isRecording = false;
 let speakResponses = true;
-let completedDays = JSON.parse(localStorage.getItem("lumina_completed") || "[]");
+let focusMode = localStorage.getItem("lumina:focusMode") === "true";
+let activeMobileTab = localStorage.getItem("lumina:mobileTab") || "learn";
+
+// Progress schema: { completedDays: [], currentDay: 1, lastVisited: "" }
+function loadProgress() {
+  try {
+    return JSON.parse(localStorage.getItem("lumina:progress")) || { completedDays: [], currentDay: 1, lastVisited: "" };
+  } catch { return { completedDays: [], currentDay: 1, lastVisited: "" }; }
+}
+
+function saveProgress(progress) {
+  progress.lastVisited = new Date().toISOString();
+  localStorage.setItem("lumina:progress", JSON.stringify(progress));
+}
+
+let progress = loadProgress();
+let completedDays = progress.completedDays;
 
 // Instantiate visualizer
 let visualizer = null;
@@ -15,14 +31,19 @@ let visualizer = null;
 // Initialize app when DOM loaded
 document.addEventListener("DOMContentLoaded", () => {
   visualizer = new LuminaVisualizer("visualizer-canvas");
-  
-  loadSavedKeys(); // Load API keys from local storage securely
+
+  loadSavedKeys();
+  currentDay = progress.currentDay || 1;
   initRoadmap();
   initVoices();
   initSpeechRecognition();
   loadDay(currentDay);
   setupEventListeners();
   updateProgress();
+  initTabs();
+  applyFocusMode(focusMode);
+  initMobileTabs();
+  setTutorStatus("idle");
 
   // Initialize D-ID fallback avatar picture
   const didImageInput = document.getElementById("did-image-input");
@@ -77,17 +98,17 @@ function initRoadmap() {
     const item = curriculumData[d];
     if (!item) continue;
 
-    const node = document.createElement("div");
-    node.className = `day-node ${d === currentDay ? 'active' : ''}`;
+    const isCompleted = completedDays.includes(d);
+    const isCurrentDay = d === currentDay;
+
+    const node = document.createElement("button");
+    node.className = `day-node${isCurrentDay ? ' active' : ''}${isCompleted ? ' completed' : ''}`;
     node.id = `day-node-${d}`;
     node.dataset.day = d;
-    
-    // Add checkmark if complete
-    const isCompleted = completedDays.includes(d);
-    const badgeText = isCompleted ? "✓" : d;
-    
+    node.setAttribute("aria-label", `Day ${d}: ${item.title}${isCompleted ? ' (completed)' : ''}`);
+
     node.innerHTML = `
-      <div class="day-badge">${badgeText}</div>
+      <div class="day-badge">${isCompleted ? "✓" : d}</div>
       <div class="day-info">
         <span class="day-title">${item.title}</span>
         <span class="day-cat">${item.category}</span>
@@ -95,11 +116,8 @@ function initRoadmap() {
     `;
 
     node.addEventListener("click", () => {
-      // Set active styles
       document.querySelectorAll(".day-node").forEach(el => el.classList.remove("active"));
       node.classList.add("active");
-      
-      // Load selected day
       loadDay(d);
     });
 
@@ -112,6 +130,10 @@ function loadDay(day) {
   currentDay = day;
   const item = curriculumData[day];
   if (!item) return;
+
+  updateTopbarLabel(day);
+  progress.currentDay = day;
+  saveProgress(progress);
 
   // Update Category Badge
   document.getElementById("topic-category-badge").innerText = item.category;
@@ -126,6 +148,12 @@ function loadDay(day) {
 
   // Launch visualizer module
   visualizer.setMode(item.visualizerMode);
+
+  // Init quiz for this day
+  initQuiz(day);
+
+  // Update day-scoped suggestion chips
+  renderSuggestionChips(day);
 
   // Stop any active speaking
   if (speechSynth) speechSynth.cancel();
@@ -165,7 +193,200 @@ function parseMarkdown(md) {
   return html;
 }
 
-// Setup Event Listeners
+// ── Quiz (Phase 5) ────────────────────────────────────────────────────────────
+
+let quizState = { qIndex: 0, correct: 0, answered: 0, questions: [] };
+
+function initQuiz(day) {
+  const panel = document.getElementById("quiz-panel");
+  const data = curriculumData[day];
+  if (!panel) return;
+
+  if (!data?.quiz?.length) { panel.hidden = true; return; }
+
+  // Load prior best from storage
+  const prior = JSON.parse(localStorage.getItem(`lumina:quiz:${day}`) || "null");
+  const questions = data.quiz;
+  quizState = { qIndex: 0, correct: 0, answered: 0, questions, day };
+
+  panel.hidden = false;
+  const scoreEl = document.getElementById("quiz-score");
+  if (prior) scoreEl.textContent = `Best: ${prior.correct}/${prior.total}`;
+  else scoreEl.textContent = "";
+
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const { questions, qIndex } = quizState;
+  const q = questions[qIndex];
+  if (!q) return;
+
+  document.getElementById("quiz-question").textContent = `Q${qIndex + 1}/${questions.length}: ${q.q}`;
+  document.getElementById("quiz-feedback").textContent = "";
+  document.getElementById("quiz-feedback").className = "quiz-feedback";
+  const nextBtn = document.getElementById("quiz-next-btn");
+  if (nextBtn) nextBtn.hidden = true;
+
+  const optionsEl = document.getElementById("quiz-options");
+  optionsEl.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-option-btn";
+    btn.textContent = opt;
+    btn.setAttribute("role", "listitem");
+    btn.addEventListener("click", () => handleQuizAnswer(i));
+    optionsEl.appendChild(btn);
+  });
+}
+
+function handleQuizAnswer(selectedIndex) {
+  const { questions, qIndex } = quizState;
+  const q = questions[qIndex];
+  const buttons = document.querySelectorAll(".quiz-option-btn");
+  const isCorrect = selectedIndex === q.answerIndex;
+
+  quizState.answered++;
+  if (isCorrect) quizState.correct++;
+
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answerIndex) btn.classList.add("correct");
+    else if (i === selectedIndex && !isCorrect) btn.classList.add("wrong");
+  });
+
+  const feedbackEl = document.getElementById("quiz-feedback");
+  feedbackEl.textContent = (isCorrect ? "✓ Correct! " : "✗ Not quite. ") + q.explain;
+  feedbackEl.className = "quiz-feedback show";
+
+  const nextBtn = document.getElementById("quiz-next-btn");
+  const isLastQuestion = qIndex >= questions.length - 1;
+
+  if (isLastQuestion) {
+    saveQuizResult();
+    showQuizResult();
+  } else {
+    if (nextBtn) { nextBtn.hidden = false; nextBtn.onclick = nextQuizQuestion; }
+  }
+}
+
+function nextQuizQuestion() {
+  quizState.qIndex++;
+  renderQuizQuestion();
+}
+
+function saveQuizResult() {
+  const { correct, questions, day } = quizState;
+  const prior = JSON.parse(localStorage.getItem(`lumina:quiz:${day}`) || "null");
+  const total = questions.length;
+  const best = prior ? Math.max(prior.correct, correct) : correct;
+  localStorage.setItem(`lumina:quiz:${day}`, JSON.stringify({ correct: best, total }));
+  document.getElementById("quiz-score").textContent = `Best: ${best}/${total}`;
+}
+
+function showQuizResult() {
+  const { correct, questions } = quizState;
+  const total = questions.length;
+  const passed = correct >= Math.ceil(total * 2 / 3);
+
+  const feedbackEl = document.getElementById("quiz-feedback");
+  const banner = document.createElement("div");
+  banner.className = passed ? "quiz-pass-banner" : "quiz-feedback show";
+
+  if (passed) {
+    banner.textContent = `🎉 Passed! ${correct}/${total} — Day marked complete.`;
+    markDayComplete(quizState.day);
+  } else {
+    banner.textContent = `Score: ${correct}/${total}. Need ${Math.ceil(total * 2 / 3)}/${total} to pass. Try again!`;
+  }
+
+  feedbackEl.after(banner);
+
+  const nextBtn = document.getElementById("quiz-next-btn");
+  if (nextBtn) {
+    nextBtn.hidden = false;
+    nextBtn.textContent = "Retry Quiz";
+    nextBtn.onclick = () => { banner.remove(); quizState.qIndex = 0; quizState.correct = 0; quizState.answered = 0; renderQuizQuestion(); };
+  }
+}
+
+// ── Tab control (Playground / Code) ──────────────────────────────────────────
+
+function initTabs() {
+  document.getElementById("tab-playground").addEventListener("click", () => switchTab("playground"));
+  document.getElementById("tab-code").addEventListener("click", () => switchTab("code"));
+}
+
+function switchTab(name) {
+  const tabs = { playground: "tab-playground", code: "tab-code" };
+  const panes = { playground: "playground-tab-pane", code: "code-tab-pane" };
+  Object.keys(tabs).forEach(k => {
+    const isActive = k === name;
+    document.getElementById(tabs[k]).classList.toggle("active", isActive);
+    document.getElementById(tabs[k]).setAttribute("aria-selected", String(isActive));
+    document.getElementById(panes[k]).classList.toggle("active", isActive);
+  });
+}
+
+// ── Focus mode ────────────────────────────────────────────────────────────────
+
+function applyFocusMode(on) {
+  focusMode = on;
+  document.querySelector(".app-container").classList.toggle("focus-mode", on);
+  const btn = document.getElementById("btn-focus-mode");
+  if (btn) btn.classList.toggle("active", on);
+  localStorage.setItem("lumina:focusMode", String(on));
+}
+
+// ── Prev / Next day ───────────────────────────────────────────────────────────
+
+function goToDay(day) {
+  const clamped = Math.max(1, Math.min(30, day));
+  document.querySelectorAll(".day-node").forEach(el => el.classList.remove("active"));
+  const node = document.getElementById(`day-node-${clamped}`);
+  if (node) node.classList.add("active");
+  loadDay(clamped);
+  updateTopbarLabel(clamped);
+}
+
+function updateTopbarLabel(day) {
+  const el = document.getElementById("topbar-day-label");
+  if (el) el.textContent = `Day ${day}`;
+}
+
+// ── Mobile three-tab navigation ───────────────────────────────────────────────
+
+function initMobileTabs() {
+  const tabBar = document.getElementById("mobile-tab-bar");
+  if (!tabBar) return;
+  tabBar.querySelectorAll(".mobile-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.tab;
+      switchMobileTab(tab);
+    });
+  });
+  switchMobileTab(activeMobileTab);
+}
+
+function switchMobileTab(tab) {
+  activeMobileTab = tab;
+  localStorage.setItem("lumina:mobileTab", tab);
+
+  const sidebar = document.querySelector(".sidebar");
+  const workspace = document.querySelector(".workspace");
+  const chat = document.querySelector(".chat-pane");
+
+  [sidebar, workspace, chat].forEach(el => el && el.classList.remove("mobile-active"));
+  document.querySelectorAll(".mobile-tab-btn").forEach(b => b.classList.remove("active"));
+
+  const map = { lessons: sidebar, learn: workspace, tutor: chat };
+  if (map[tab]) map[tab].classList.add("mobile-active");
+
+  const btn = document.querySelector(`.mobile-tab-btn[data-tab="${tab}"]`);
+  if (btn) btn.classList.add("active");
+}
+
+// ── Setup Event Listeners
 function setupEventListeners() {
   // TTS Button
   document.getElementById("btn-play-topic").addEventListener("click", () => {
@@ -190,6 +411,7 @@ function setupEventListeners() {
   replyToggle.addEventListener("click", () => {
     speakResponses = !speakResponses;
     replyToggle.classList.toggle("active", speakResponses);
+    replyToggle.setAttribute("aria-pressed", String(speakResponses));
   });
 
   // Send Message Button
@@ -200,6 +422,50 @@ function setupEventListeners() {
 
   // Mic Button
   document.getElementById("btn-mic-toggle").addEventListener("click", toggleVoiceRecording);
+
+  // TTS pause / resume
+  const pauseBtn = document.getElementById("btn-pause-tts");
+  const resumeBtn = document.getElementById("btn-resume-tts");
+  if (pauseBtn) pauseBtn.addEventListener("click", () => {
+    if (speechSynth?.speaking) {
+      speechSynth.pause();
+      pauseBtn.hidden = true;
+      if (resumeBtn) resumeBtn.hidden = false;
+      setTutorStatus("idle");
+    }
+  });
+  if (resumeBtn) resumeBtn.addEventListener("click", () => {
+    if (speechSynth?.paused) {
+      speechSynth.resume();
+      resumeBtn.hidden = true;
+      if (pauseBtn) pauseBtn.hidden = false;
+      setTutorStatus("speaking");
+    }
+  });
+
+  // Mark complete & reset progress
+  const markCompleteBtn = document.getElementById("btn-mark-complete");
+  if (markCompleteBtn) markCompleteBtn.addEventListener("click", () => markDayComplete(currentDay));
+  const resetBtn = document.getElementById("btn-reset-progress");
+  if (resetBtn) resetBtn.addEventListener("click", resetProgress);
+
+  // Focus mode toggle
+  const focusBtn = document.getElementById("btn-focus-mode");
+  if (focusBtn) focusBtn.addEventListener("click", () => applyFocusMode(!focusMode));
+
+  // Prev / Next day buttons
+  const prevBtn = document.getElementById("btn-prev-day");
+  const nextBtn = document.getElementById("btn-next-day");
+  if (prevBtn) prevBtn.addEventListener("click", () => goToDay(currentDay - 1));
+  if (nextBtn) nextBtn.addEventListener("click", () => goToDay(currentDay + 1));
+
+  // Keyboard arrow keys for day navigation (skip when typing in inputs)
+  document.addEventListener("keydown", (e) => {
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.key === "ArrowLeft") goToDay(currentDay - 1);
+    if (e.key === "ArrowRight") goToDay(currentDay + 1);
+  });
 }
 
 // Populate system voices
@@ -247,10 +513,19 @@ const hindiDailyLectures = {
   15: "डे 15. हम एजेंटिक एआई शुरू कर रहे हैं। एजेंट सोचने, टूल के साथ काम करने और परिणामों को देखने के लिए लूप का उपयोग करते हैं।"
 };
 
+// Set status text
+function setTutorStatus(state) {
+  const el = document.getElementById("tutor-status");
+  if (!el) return;
+  const labels = { idle: "Idle", speaking: "Speaking", listening: "Listening" };
+  el.textContent = labels[state] || "Idle";
+  el.style.color = state === "speaking" ? "var(--cyan)" : state === "listening" ? "var(--pink)" : "var(--green)";
+}
+
 // Speak text using Web Speech API
 function speakText(text) {
   if (!speechSynth) return;
-  
+
   // Stop speaking current text first
   speechSynth.cancel();
 
@@ -277,10 +552,28 @@ function speakText(text) {
     return;
   }
 
+  const speedSelect = document.getElementById("tts-speed-select");
+  const rate = speedSelect ? parseFloat(speedSelect.value) : 1;
+
   const utterance = new SpeechSynthesisUtterance(textToSpeak);
-  if (selectedVoice) {
-    utterance.voice = selectedVoice;
-  }
+  if (selectedVoice) utterance.voice = selectedVoice;
+  utterance.rate = rate;
+
+  utterance.onstart = () => {
+    setTutorStatus("speaking");
+    const pauseBtn = document.getElementById("btn-pause-tts");
+    const resumeBtn = document.getElementById("btn-resume-tts");
+    if (pauseBtn) pauseBtn.hidden = false;
+    if (resumeBtn) resumeBtn.hidden = true;
+  };
+
+  utterance.onend = () => {
+    setTutorStatus("idle");
+    const pauseBtn = document.getElementById("btn-pause-tts");
+    const resumeBtn = document.getElementById("btn-resume-tts");
+    if (pauseBtn) pauseBtn.hidden = true;
+    if (resumeBtn) resumeBtn.hidden = true;
+  };
 
   speechSynth.speak(utterance);
 }
@@ -393,11 +686,24 @@ async function generateDIDAvatar(text, apiKey, imageUrl, lang) {
 
 // Setup Speech Recognition (STT)
 function initSpeechRecognition() {
+  const micBtn = document.getElementById("btn-mic-toggle");
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  // Capability detection: disable mic gracefully on unsupported browsers
   if (!SpeechRecognition) {
-    console.log("Web Speech Recognition API not supported in this browser.");
-    document.getElementById("btn-mic-toggle").style.display = "none";
+    if (micBtn) {
+      micBtn.disabled = true;
+      micBtn.title = "Voice input requires Chrome or Edge";
+      micBtn.style.opacity = "0.4";
+    }
+    setTutorStatus("idle");
     return;
+  }
+
+  // TTS capability detection
+  if (!window.speechSynthesis) {
+    const playBtn = document.getElementById("btn-play-topic");
+    if (playBtn) { playBtn.disabled = true; playBtn.title = "Text-to-speech requires Chrome or Edge"; }
   }
 
   recognition = new SpeechRecognition();
@@ -408,38 +714,39 @@ function initSpeechRecognition() {
 
   recognition.onstart = () => {
     isRecording = true;
-    const micBtn = document.getElementById("btn-mic-toggle");
-    micBtn.classList.add("recording");
-    micBtn.innerText = "🛑";
+    if (micBtn) micBtn.classList.add("recording");
+    const indicator = document.getElementById("mic-indicator");
+    if (indicator) indicator.hidden = false;
+    setTutorStatus("listening");
   };
 
   recognition.onend = () => {
     isRecording = false;
-    const micBtn = document.getElementById("btn-mic-toggle");
-    micBtn.classList.remove("recording");
-    micBtn.innerText = "🎙️";
+    if (micBtn) micBtn.classList.remove("recording");
+    const indicator = document.getElementById("mic-indicator");
+    if (indicator) indicator.hidden = true;
+    setTutorStatus("idle");
   };
 
   recognition.onresult = (event) => {
     const resultText = event.results[0][0].transcript;
     document.getElementById("chat-input-text").value = resultText;
-    sendMessage(); // Send automatically once speech transcribed
+    sendMessage();
   };
 
   recognition.onerror = (event) => {
     console.error("Speech Recognition Error:", event.error);
     isRecording = false;
-    const micBtn = document.getElementById("btn-mic-toggle");
-    micBtn.classList.remove("recording");
-    micBtn.innerText = "🎙️";
+    if (micBtn) micBtn.classList.remove("recording");
+    const indicator = document.getElementById("mic-indicator");
+    if (indicator) indicator.hidden = true;
+    setTutorStatus("idle");
   };
 
-  // Adjust STT language dynamically when voice selection changes
   document.getElementById("voice-select").addEventListener("change", (e) => {
     if (e.target.value !== "") {
       const selectedVoice = voices[parseInt(e.target.value)];
       recognition.lang = selectedVoice.lang;
-      console.log("Speech recognition language switched to:", recognition.lang);
     }
   });
 }
@@ -506,6 +813,41 @@ function appendMessage(text, sender) {
   historyEl.scrollTop = historyEl.scrollHeight;
 }
 
+// Build grounded system prompt for the current day (shared by mock + API paths)
+function buildSystemPrompt(day) {
+  const topic = curriculumData[day];
+  if (!topic) return "You are Lumina, a friendly AI Tutor for LLMs and Agentic AI.";
+  const conceptSnippet = topic.concept.slice(0, 800); // stay within token budget
+  return `You are Lumina, a friendly, professional AI Tutor teaching LLMs and Agentic AI.
+The learner is on Day ${day}: "${topic.title}". Prefer plain English. Reference today's concept when relevant.
+Today's concept (excerpt): ${conceptSnippet}
+Guidelines: Keep answers under 150 words. Use a short code snippet if helpful.`;
+}
+
+// Render day-scoped suggestion chips
+function renderSuggestionChips(day) {
+  const el = document.getElementById("suggestion-chips");
+  if (!el) return;
+  const topic = curriculumData[day];
+  if (!topic) { el.innerHTML = ""; return; }
+  const suggestions = [
+    `Explain ${topic.title} in simple terms`,
+    `Give me an example of ${topic.title}`,
+    `How is ${topic.title} used in practice?`
+  ];
+  el.innerHTML = "";
+  suggestions.forEach(text => {
+    const chip = document.createElement("button");
+    chip.className = "suggestion-chip";
+    chip.textContent = text;
+    chip.addEventListener("click", () => {
+      document.getElementById("chat-input-text").value = text;
+      sendMessage();
+    });
+    el.appendChild(chip);
+  });
+}
+
 // Get AI Tutor Answer (Mock logic with local data or Live API call if Key exists)
 async function getTutorResponse(query) {
   const apiKey = document.getElementById("api-key-input").value.trim();
@@ -514,18 +856,8 @@ async function getTutorResponse(query) {
   // If user supplied API key, let's call actual Gemini model
   if (apiKey) {
     try {
-      // Build context prompt injecting details of the current learning topic
-      const activeTopic = curriculumData[currentDay];
-      const prompt = `You are Lumina, a friendly, professional AI Tutor teaching LLMs and Agentic AI.
-Current user study topic: Day ${currentDay} - ${activeTopic.title}
-Concept summary: ${activeTopic.concept}
-
-User Question: "${query}"
-
-Guidelines:
-1. Explain simply in plain, clear English.
-2. If applicable, provide a short snippet.
-3. Keep it brief (under 150 words).`;
+      const systemPrompt = buildSystemPrompt(currentDay);
+      const prompt = `${systemPrompt}\n\nUser Question: "${query}"`;
 
       // Identify model type by key prefix
       if (apiKey.startsWith("AIza")) {
@@ -585,14 +917,31 @@ Guidelines:
 function markDayComplete(day) {
   if (!completedDays.includes(day)) {
     completedDays.push(day);
-    localStorage.setItem("lumina_completed", JSON.stringify(completedDays));
-    
-    // Update badge in sidebar
-    const badge = document.querySelector(`#day-node-${day} .day-badge`);
-    if (badge) badge.innerText = "✓";
-    
+    progress.completedDays = completedDays;
+    progress.currentDay = day;
+    saveProgress(progress);
+
+    const node = document.getElementById(`day-node-${day}`);
+    if (node) {
+      node.classList.add("completed");
+      const badge = node.querySelector(".day-badge");
+      if (badge) badge.innerText = "✓";
+      node.setAttribute("aria-label", `Day ${day}: ${curriculumData[day]?.title || ''} (completed)`);
+    }
+
     updateProgress();
   }
+}
+
+// Reset all progress
+function resetProgress() {
+  if (!confirm("Reset all progress? This cannot be undone.")) return;
+  progress = { completedDays: [], currentDay: 1, lastVisited: "" };
+  completedDays = [];
+  saveProgress(progress);
+  initRoadmap();
+  goToDay(1);
+  updateProgress();
 }
 
 // Update UI progress indicator
