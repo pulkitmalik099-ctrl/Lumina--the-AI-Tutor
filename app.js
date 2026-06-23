@@ -77,8 +77,15 @@ function loadSavedKeys() {
   }
   if (didKeyInput) {
     didKeyInput.value = localStorage.getItem("lumina_did_key") || "";
+    const avatarWrapper = document.querySelector(".avatar-video-wrapper");
+    const updateAvatar = (key) => {
+      if (avatarWrapper) avatarWrapper.classList.toggle("did-active", !!key);
+    };
+    updateAvatar(didKeyInput.value);
     didKeyInput.addEventListener("input", (e) => {
-      localStorage.setItem("lumina_did_key", e.target.value.trim());
+      const key = e.target.value.trim();
+      localStorage.setItem("lumina_did_key", key);
+      updateAvatar(key);
     });
   }
   if (didImageInput) {
@@ -127,8 +134,8 @@ function initRoadmap() {
 
 // Render selected day data
 function loadDay(day) {
-  // Stop any speech immediately when switching days
-  if (speechSynth) speechSynth.cancel();
+  // Only cancel if something is actively speaking — avoids corrupting Chrome's synth state
+  if (speechSynth && (speechSynth.speaking || speechSynth.pending)) speechSynth.cancel();
   setTutorStatus("idle");
 
   currentDay = day;
@@ -577,6 +584,12 @@ function speakText(text) {
   };
 
   speechSynth.speak(utterance);
+
+  // Chrome bug: synth can silently pause itself — kick it every second
+  const resumeTimer = setInterval(() => {
+    if (!speechSynth.speaking) { clearInterval(resumeTimer); return; }
+    if (speechSynth.paused) speechSynth.resume();
+  }, 1000);
 }
 
 // Generate D-ID Avatar video talking frames and play inside video pane

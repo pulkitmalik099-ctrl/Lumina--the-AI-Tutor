@@ -559,8 +559,13 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow-y: auto;        /* right panel scrolls when content overflows */
+  overflow-x: hidden;
   border-left: 1px solid var(--border-color);
 }
+
+.chat-pane::-webkit-scrollbar { width: 4px; }
+.chat-pane::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
 
 .chat-header {
   padding: 24px;
@@ -779,6 +784,9 @@ body {
   gap: 6px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--border-color);
+  max-height: 90px;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .suggestion-chip {
@@ -1498,7 +1506,7 @@ skinny-key-input {
   font-size: 11px;
 }
 
-/* D-ID Talking Avatar Video Screen Styles */
+/* D-ID Talking Avatar Video Screen Styles — hidden by default, shown only when D-ID key active */
 .avatar-video-wrapper {
   width: calc(100% - 40px);
   height: 180px;
@@ -1509,9 +1517,13 @@ skinny-key-input {
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   position: relative;
-  display: flex;
+  display: none;           /* hidden until D-ID key entered */
   justify-content: center;
   align-items: center;
+}
+
+.avatar-video-wrapper.did-active {
+  display: flex;
 }
 
 #avatar-video {
