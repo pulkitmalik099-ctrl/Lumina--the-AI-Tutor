@@ -61,7 +61,7 @@
       </div>
       
       <!-- Top Half: Daily Concept Explanation -->
-      <section class="workspace-pane">
+      <section class="workspace-pane concept-pane">
         <div class="pane-header">
           <div class="pane-title">
             <span>📖</span> Topic Explanation
@@ -85,20 +85,19 @@
             <option value="1.5">1.5×</option>
           </select>
         </div>
-      </section>
-
-      <!-- Quiz panel (hidden when no quiz data) -->
-      <section class="quiz-panel" id="quiz-panel" aria-label="Check understanding" hidden>
-        <div class="quiz-header">
-          <span class="quiz-title">Check Understanding</span>
-          <span class="quiz-score" id="quiz-score"></span>
-        </div>
-        <div class="quiz-question" id="quiz-question"></div>
-        <div class="quiz-options" id="quiz-options" role="list"></div>
-        <div class="quiz-feedback" id="quiz-feedback" aria-live="polite"></div>
-        <div class="quiz-nav">
-          <button class="quiz-next-btn" id="quiz-next-btn" hidden>Next Question →</button>
-        </div>
+        <!-- Quiz panel lives inside concept pane so it doesn't displace the tab section -->
+        <section class="quiz-panel" id="quiz-panel" aria-label="Check understanding" hidden>
+          <div class="quiz-header">
+            <span class="quiz-title">Check Understanding</span>
+            <span class="quiz-score" id="quiz-score"></span>
+          </div>
+          <div class="quiz-question" id="quiz-question"></div>
+          <div class="quiz-options" id="quiz-options" role="list"></div>
+          <div class="quiz-feedback" id="quiz-feedback" aria-live="polite"></div>
+          <div class="quiz-nav">
+            <button class="quiz-next-btn" id="quiz-next-btn" hidden>Next Question →</button>
+          </div>
+        </section>
       </section>
 
       <!-- Bottom Half: Tabbed Visualizer / Code -->
