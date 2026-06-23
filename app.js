@@ -127,6 +127,10 @@ function initRoadmap() {
 
 // Render selected day data
 function loadDay(day) {
+  // Stop any speech immediately when switching days
+  if (speechSynth) speechSynth.cancel();
+  setTutorStatus("idle");
+
   currentDay = day;
   const item = curriculumData[day];
   if (!item) return;
@@ -154,9 +158,6 @@ function loadDay(day) {
 
   // Update day-scoped suggestion chips
   renderSuggestionChips(day);
-
-  // Stop any active speaking
-  if (speechSynth) speechSynth.cancel();
 }
 
 // Clean and simple markdown parser
@@ -840,9 +841,11 @@ function renderSuggestionChips(day) {
     const chip = document.createElement("button");
     chip.className = "suggestion-chip";
     chip.textContent = text;
+    // Pre-fill input only — user presses Send to avoid ghost-tap auto-sends on mobile
     chip.addEventListener("click", () => {
-      document.getElementById("chat-input-text").value = text;
-      sendMessage();
+      const input = document.getElementById("chat-input-text");
+      input.value = text;
+      input.focus();
     });
     el.appendChild(chip);
   });

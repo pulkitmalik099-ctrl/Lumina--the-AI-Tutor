@@ -254,7 +254,7 @@ body {
 /* Main Content Workspace */
 .workspace {
   display: grid;
-  grid-template-rows: auto 1fr 1fr;
+  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
 }
@@ -267,6 +267,19 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
+}
+
+/* Concept scroll area must have a bounded height to scroll */
+.concept-pane .scroll-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Tab section inner flex also needs bounding */
+.workspace-tab-section {
+  min-height: 0;
 }
 
 /* Workspace top bar */
