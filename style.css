@@ -251,35 +251,37 @@ body {
   margin-top: 2px;
 }
 
-/* Main Content Workspace */
+/* Main Content Workspace — scrollable column */
 .workspace {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  overflow: hidden;
+  overflow-y: auto;   /* the whole center column scrolls */
+  overflow-x: hidden;
 }
 
-/* Prevent grid rows from overflowing their allocated height */
-.workspace > * { min-height: 0; }
+.workspace::-webkit-scrollbar { width: 6px; }
+.workspace::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 
-/* Concept pane — flex column, quiz sits below audio row */
+/* Each pane is its natural height — no forced squeezing */
+.workspace-pane {
+  flex-shrink: 0;
+}
+
+/* Concept pane: let content be full height, no inner scroll needed */
 .concept-pane {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
 }
 
-/* Concept scroll area must have a bounded height to scroll */
 .concept-pane .scroll-content {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  overflow: visible;  /* workspace scrolls, not the inner div */
 }
 
-/* Tab section inner flex also needs bounding */
+/* Tab section gets a fixed tall height so playground is always usable */
 .workspace-tab-section {
-  min-height: 0;
+  min-height: 520px;
+  flex-shrink: 0;
 }
 
 /* Workspace top bar */
@@ -418,35 +420,24 @@ body {
 .tab-pane {
   display: none;
   flex: 1;
-  min-height: 0;
-  overflow: hidden;
   padding: 16px;
 }
 
 .tab-pane.active {
   display: flex;
   flex-direction: column;
-}
-
-/* Visualizer canvas fill + scroll */
-.tab-pane.active .visualizer-canvas-wrap {
   flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 }
 
-/* Code container fill */
+.tab-pane.active .visualizer-canvas-wrap,
 .tab-pane.active .code-container-wrap {
   flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 .workspace-pane {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   border-bottom: 1px solid var(--border-color);
 }
 
